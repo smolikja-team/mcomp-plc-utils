@@ -113,12 +113,12 @@ class EmailReporting {
   static Future<void> composeAnErrorEmail({
     required Object error,
     required StackTrace stack,
-    List<String>? to,
+    required List<String> to,
     List<String>? cc,
   }) async {
     final mailtoLink = Mailto(
-      to: ['info@microcomp.cz'],
-      cc: ['michal.kratoska@microcomp.cz', 'smolikja@protonmail.com'],
+      to: to,
+      cc: cc,
       subject: 'Application error reporting',
       body: await _composeBody(error, stack),
     );
