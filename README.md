@@ -1,6 +1,6 @@
 # mcomp plc utils
 
-Set of utilities for client Flutter apps communicationg with mComp's PLC.
+Set of utilities for client Flutter apps communicating with mComp's PLC.
 
 ## Features
 
@@ -31,4 +31,24 @@ final usersPlcsAsMap = await ConfigFetcher.fetchUsersPlcs();
 final listOfPlcObjects = usersPlcsAsMap.map((userPlc) {
     return PlcObject.fromJson(userPlc);
 }).toList();
+```
+
+### Email Reporting
+
+Composes and email with informations about user, device including an error and stack trace.
+
+#### Output
+
+- Composes and email message
+- Tries to launch email client with message installed on device
+
+#### Example
+
+```dart
+EmailReporting.composeAnErrorEmail(
+    error: <Error>,
+    stack: <StackTrace>,
+    to: ['address@domain.com', 'address1@domain.com'],
+    cc: ['address2@domain.com'],
+)
 ```
