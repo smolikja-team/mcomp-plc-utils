@@ -7,93 +7,91 @@ import 'package:logging/logging.dart';
 
 class ConfigFetcher {
   static const String _kConfigFileExtension = '.json';
-  static const String _kFirestoreCollection = 'home-plc';
+  static const String _kFirestoreCollection = 'plcs';
   static const String _kFirestoreKeyUsers = 'users';
   static const String _kFirestoreKeyEmail = 'email';
   static const String _kFirestoreKeyUid = 'uid';
+  static const int _kOneMegabyte = 1024 * 1024;
 
   static final _logging = Logger('ConfigFetcher');
 
-  /// Fetch config from Firebase Storage
-  /// Returns list of assigned homes
-  /// Each home is represented as [Map<String, dynamic>]
+  /// Fetch user's PLCs from Firebase Storage
+  /// Returns list of assigned PLCs
+  /// Each PLC is represented as [Map<String, dynamic>]
   /// Throws [Exception] if current user is null or email is null
   /// Throws [Exception] if identifiers are null
-  static Future<List<Map<String, dynamic>>> fetchConfigsAsMaps() async {
+  static Future<List<Map<String, dynamic>>> fetchUsersPlcs() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     await currentUser?.reload();
 
     if (currentUser == null || currentUser.email == null) {
-      throw Exception('fetchConfigsAsMaps: current user is null');
+      throw Exception('fetchUsersPlcs: current user is null');
     }
 
-    final identifiers = await _fetchHomeIdentifiers(
+    final identifiers = await _fetchPlcsIdentifiers(
       userEmail: currentUser.email!,
       userUid: currentUser.uid,
     );
     if (identifiers == null) {
-      throw Exception('fetchConfigsAsMaps: identifiers are null');
+      throw Exception('fetchUsersPlcs: identifiers are null');
     }
 
-    final assignedHomesMaps = await _fetchAssignedHomesMaps(identifiers);
+    final assignedPlcsMaps = await _fetchAssignedPlcsMaps(identifiers);
 
-    return assignedHomesMaps;
+    return assignedPlcsMaps;
   }
 
-  /// Fetch assigned homes from Firebase Storage
-  /// Returns list of assigned homes
-  /// Each home is represented as [Map<String, dynamic>]
-  static Future<List<Map<String, dynamic>>> _fetchAssignedHomesMaps(
+  /// Fetch assigned PLCs from Firebase Storage
+  /// Returns list of assigned PLCs
+  /// Each PLC is represented as [Map<String, dynamic>]
+  static Future<List<Map<String, dynamic>>> _fetchAssignedPlcsMaps(
     List<String> identifiers,
   ) async {
-    final homePLCs = <Map<String, dynamic>>[];
+    final plcs = <Map<String, dynamic>>[];
     final storageRef = FirebaseStorage.instance.ref();
 
-    for (final homeId in identifiers) {
-      final pathReference = storageRef.child(homeId + _kConfigFileExtension);
+    for (final plcId in identifiers) {
+      final pathReference = storageRef.child(plcId + _kConfigFileExtension);
 
       //TODO: we can use metadafa for config version comparasion
       // final _ = await pathReference.getMetadata();
       try {
-        const oneMegabyte = 1024 * 1024;
-
         // TODO: we can use `writeToFile` for saving to local storage. Is it a good approach?
         final data = await pathReference.getData(
-          oneMegabyte,
+          _kOneMegabyte,
         );
 
         final dataString = utf8.decode(data ?? []);
 
-        final homePLCMap = jsonDecode(dataString) as Map<String, dynamic>;
-        _logging
-            .fine('_fetchAssignedHomesMaps homePLC ID: ${homePLCMap['id']}');
+        final plcMap = jsonDecode(dataString) as Map<String, dynamic>;
+        _logging.fine('_fetchAssignedPlcsMaps plc ID: ${plcMap['id']}');
 
-        homePLCs.add(homePLCMap);
+        plcs.add(plcMap);
       } on FirebaseException catch (e, stackTrace) {
         _logging.severe(
-          '_fetchAssignedHomesMaps: ${e.toString()}',
+          '_fetchAssignedPlcsMaps: ${e.toString()}',
           e,
           stackTrace,
         );
       } catch (e, stackTrace) {
         _logging.severe(
-          '_fetchAssignedHomesMaps: ${e.toString()}',
+          '_fetchAssignedPlcsMaps: ${e.toString()}',
           e,
           stackTrace,
         );
       }
     }
 
-    //TODO: save homes to secure storage or save homes one by one
+    //TODO: save PLCs to secure storage or save PLC one by one
     _logging.info(
-      '_fetchAssignedHomes length: ${homePLCs.length}',
+      '_fetchAssignedPlcsMaps length: ${plcs.length}',
     );
-    return homePLCs;
+    return plcs;
   }
 
-  /// Fetch home identifiers from Firestore
-  /// Returns list of home identifiers
-  static Future<List<String>?> _fetchHomeIdentifiers({
+  /// Fetch PLCs identifiers from Firestore
+  /// Returns list of PLC identifiers
+  static Future<List<String>?> _fetchPlcsIdentifiers({
     required String userEmail,
     required String userUid,
   }) async {
@@ -108,21 +106,21 @@ class ConfigFetcher {
     ).get();
 
     _logging.fine(
-      '_fetchHomeIdentifiers documents: ${documents.docs.toString()}',
+      '_fetchPlcsIdentifiers documents: ${documents.docs.toString()}',
     );
 
-    final homeIds = <String>[];
+    final plcIds = <String>[];
     for (final doc in documents.docs) {
-      _logging.fine('_fetchHomeIdentifiers doc ID: ${doc.id}');
-      homeIds.add(doc.id);
+      _logging.fine('_fetchPlcsIdentifiers doc ID: ${doc.id}');
+      plcIds.add(doc.id);
     }
 
-    if (homeIds.isEmpty) {
+    if (plcIds.isEmpty) {
       _logging.warning(
-        '_fetchHomeIdentifiers: homeIds is empty',
+        '_fetchPlcsIdentifiers: plcIds is empty',
       );
     }
 
-    return homeIds.isEmpty ? null : homeIds;
+    return plcIds.isEmpty ? null : plcIds;
   }
 }
