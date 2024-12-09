@@ -1,39 +1,34 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# mcomp plc utils
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
-
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Set of utilities for client Flutter apps communicationg with mComp's PLC.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+[Config Fetcher](#config-fetcher)
 
-## Getting started
+### Config Fetcher
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+Fetches list of assigned PLCs app is able to communicate with from Firebase as a Dart Map.
 
-## Usage
+#### Dependencies
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+- Logger (needs to be set in the parent app)
+- FirebaseAuth (user needs to be logged in the parent app)
+- FirebaseStorage (where the config is fetched from)
+- Firestore (database of user's configs)
+
+#### Output
+
+- List of PLC configurations assigned to user
+- Each PLC configuratio is represented as Map<String, dynamic>
+- Map can be serialized to a coustom PLC object
+
+#### Example
 
 ```dart
-const like = 'sample';
+final usersPlcsAsMap = await ConfigFetcher.fetchUsersPlcs();
+
+final listOfPlcObjects = usersPlcsAsMap.map((userPlc) {
+    return PlcObject.fromJson(userPlc);
+}).toList();
 ```
-
-## Additional information
-
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
