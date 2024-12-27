@@ -2,6 +2,12 @@
 
 Set of utilities for client Flutter apps communicating with mComp's PLC.
 
+## Dev
+
+### build runner
+
+`dart run build_runner build --verbose --delete-conflicting-outputs`
+
 ## Features
 
 [Config Fetcher](#config-fetcher)
