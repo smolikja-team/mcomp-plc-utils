@@ -64,9 +64,9 @@ class WebSocketController {
   /// Connect to multiple WebSocket
   /// - Parameters:
   /// - connections: List of PLC IP and WebSocket address
-  void connectAll(List<({String plcIp, String address})> connections) {
+  void connectAll(List<({String plcId, String address})> connections) {
     for (final connection in connections) {
-      connect(plcId: connection.plcIp, address: connection.address);
+      connect(plcId: connection.plcId, address: connection.address);
     }
   }
 
