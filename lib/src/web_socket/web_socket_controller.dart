@@ -81,6 +81,7 @@ class WebSocketController {
         (channel) => channel.plcId == plcId,
       );
       _disconnectChannel(channel);
+      _openedChannels.remove(channel);
     } catch (e) {
       _logger.severe(
         'WebSocket for $plcId is not connected and tries to disconnect, error: $e',
@@ -90,12 +91,10 @@ class WebSocketController {
 
   /// Disconnect all WebSocket
   void disconnectAll() {
-    print(_openedChannels);
     for (final channel in _openedChannels) {
-      print(channel);
       _disconnectChannel(channel);
     }
-    print('dine');
+    _openedChannels.clear();
   }
 
   /// Disconnect WebSocket channel
@@ -104,10 +103,13 @@ class WebSocketController {
   void _disconnectChannel(WebSocketChannelEntity channel) {
     try {
       channel.channel.sink.close();
-      _openedChannels.remove(channel);
-      _logger.info('WebSocked disconnected ${channel.address}');
+      _logger.info(
+        'WebSocked for ${channel.plcId} with ${channel.address} disconnected',
+      );
     } catch (e) {
-      _logger.severe('WebSocket disconnect ${channel.address}, error: $e');
+      _logger.severe(
+        'WebSocket for ${channel.plcId} with ${channel.address} disconnect error: $e',
+      );
     }
   }
 
