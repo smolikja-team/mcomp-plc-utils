@@ -21,8 +21,7 @@ class WebSocketController {
       WebSocketController._internal();
 
   final List<WebSocketChannelEntity> _openedChannels = [];
-  List<WebSocketChannel> get channels =>
-      _openedChannels.map((channel) => channel.channel).toList();
+  List<WebSocketChannelEntity> get channels => _openedChannels;
 
   final _logger = Logger('WebSocketController');
 
