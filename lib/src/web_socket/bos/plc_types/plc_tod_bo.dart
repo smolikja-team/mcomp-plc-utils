@@ -4,11 +4,15 @@ part 'plc_tod_bo.g.dart';
 
 @JsonSerializable()
 class PlcTodBO {
-  PlcTodBO({required this.value}) : dt = 'TOD';
+  PlcTodBO({
+    required this.value,
+    this.dt = 'TOD',
+  });
 
   factory PlcTodBO.fromJson(Map<String, dynamic> json) =>
       _$PlcTodBOFromJson(json);
 
+  @JsonKey()
   final String dt;
 
   @JsonKey(name: 'val')
