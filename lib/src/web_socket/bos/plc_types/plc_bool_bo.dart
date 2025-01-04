@@ -4,12 +4,12 @@ part 'plc_bool_bo.g.dart';
 
 @JsonSerializable()
 class PlcBoolBO {
-  PlcBoolBO({required this.value});
+  PlcBoolBO({required this.value}) : dt = 'BOOL';
 
   factory PlcBoolBO.fromJson(Map<String, dynamic> json) =>
       _$PlcBoolBOFromJson(json);
 
-  final String dt = 'BOOL';
+  final String dt;
 
   @JsonKey(name: 'val')
   final bool value;

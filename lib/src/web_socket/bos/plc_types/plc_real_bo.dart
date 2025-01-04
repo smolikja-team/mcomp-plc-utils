@@ -4,12 +4,12 @@ part 'plc_real_bo.g.dart';
 
 @JsonSerializable()
 class PlcRealBO {
-  PlcRealBO({required this.value});
+  PlcRealBO({required this.value}) : dt = 'REAL';
 
   factory PlcRealBO.fromJson(Map<String, dynamic> json) =>
       _$PlcRealBOFromJson(json);
 
-  final String dt = 'REAL';
+  final String dt;
 
   @JsonKey(name: 'val')
   double value;
