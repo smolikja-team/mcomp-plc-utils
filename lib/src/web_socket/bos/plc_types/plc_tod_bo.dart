@@ -1,0 +1,18 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'plc_tod_bo.g.dart';
+
+@JsonSerializable()
+class PlcTodBO {
+  PlcTodBO({required this.value});
+
+  factory PlcTodBO.fromJson(Map<String, dynamic> json) =>
+      _$PlcTodBOFromJson(json);
+
+  final String dt = 'TOD';
+
+  @JsonKey(name: 'val')
+  final double value;
+
+  Map<String, dynamic> toJson() => _$PlcTodBOToJson(this);
+}
