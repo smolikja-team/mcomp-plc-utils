@@ -19,7 +19,7 @@ class ConfigFetcher {
   /// Returns list of assigned PLCs
   /// Each PLC is represented as [Map<String, dynamic>]
   /// Throws [Exception] if current user is null or email is null
-  /// Throws [Exception] if identifiers are null
+  /// Returns empty list if identifiers are null
   static Future<List<Map<String, dynamic>>> fetchUsersPlcs() async {
     final currentUser = FirebaseAuth.instance.currentUser;
     await currentUser?.reload();
@@ -33,7 +33,10 @@ class ConfigFetcher {
       userUid: currentUser.uid,
     );
     if (identifiers == null) {
-      throw Exception('fetchUsersPlcs: identifiers are null');
+      _logging.warning(
+        'fetchUsersPlcs: identifiers are null',
+      );
+      return [];
     }
 
     final assignedPlcsMaps = await _fetchAssignedPlcsMaps(identifiers);
