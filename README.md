@@ -43,6 +43,10 @@ final listOfPlcObjects = usersPlcsAsMap.map((userPlc) {
 
 Composes and email with informations about user, device including an error and stack trace.
 
+#### Dependencies
+
+- Logger (needs to be set in the parent app)
+
 #### Output
 
 - Composes and email message
