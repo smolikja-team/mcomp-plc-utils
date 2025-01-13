@@ -38,6 +38,11 @@ export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_tod_bo.dart'
 export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_real_bo.dart'
     show PlcRealBO;
 
+// MARK: - Resizable Bottom Sheet
+
+export 'package:mcomp_plc_utils/src/resizable_bottom_sheet/show_resizable_bottom_sheet.dart'
+    show showResizableBottomSheet;
+
 // MARK: - Extensions
 
 export 'package:mcomp_plc_utils/src/extensions/uri_extension.dart';
