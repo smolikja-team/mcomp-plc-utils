@@ -62,3 +62,69 @@ EmailReporting.composeAnErrorEmail(
     cc: ['address2@domain.com'],
 )
 ```
+
+### Web Socket
+
+#### Dependencies
+- Logger (needs to be set in the parent app)
+- PLC ID and PLC address for communication
+
+#### Output
+
+- Opens a Web Sockets
+- Lets parent app access an opened channels
+- Updates device params on PLC via socket
+- Sends message to PLC via socket
+
+#### Business Objects
+
+- `WsMessageBO`
+- `WsMessageItemBO`
+- `PlcBoolBO`
+- `PlcIntBO`
+- `PlcDtBO`
+- `PlcTodBO`
+- `PlcRealBO`
+
+#### Example
+
+```dart
+// Connect
+WebSocketController().connectAll(,
+    (plcId: 'plcId_1', address: 'address_1'),
+    (plcId: 'plcId_2', address: 'address_2'),
+);
+
+WebSocketController().connect(plcId:'plcId_1', address: 'address_1');
+
+// Disconnect
+WebSocketController().disconnectAll();
+
+WebSocketController().disconnect('plcId_1');
+
+// Create a list of streams for each channel
+final streams = WebSocketController().channels.map((channel) async* {
+  await for (final data in channel.channel.stream) {
+    final messageData = jsonDecode(data.toString()) as Map<String, dynamic>;
+    final message = WsMessageBO.fromJson(messageData);
+
+    yield* _processMessageItems(
+      message.items ?? [],
+      cowsheds,
+      channel.plcId,
+      logger,
+    );
+    yield* _processMessageItems(
+      message.differences ?? [],
+      cowsheds,
+      channel.plcId,
+      logger,
+    );
+  }
+});
+
+// Merge all streams into a single stream
+await for (final value in StreamGroup.merge(streams)) {
+  yield value;
+}
+```
