@@ -10,7 +10,13 @@ Set of utilities for client Flutter apps communicating with mComp's PLC.
 
 ## Features
 
-[Config Fetcher](#config-fetcher)
+[Config Fetcher](#config-fetcher)\
+[Email Reporting](#email-reporting)\
+[Web Socket](#web-socket)\
+[Resizable Bottom Sheet](#resizable-bottom-sheet)\
+[Extensions](#extensions)
+
+---
 
 ### Config Fetcher
 
@@ -39,6 +45,8 @@ final listOfPlcObjects = usersPlcsAsMap.map((userPlc) {
 }).toList();
 ```
 
+---
+
 ### Email Reporting
 
 Composes and email with informations about user, device including an error and stack trace.
@@ -62,6 +70,8 @@ EmailReporting.composeAnErrorEmail(
     cc: ['address2@domain.com'],
 )
 ```
+
+---
 
 ### Web Socket
 
@@ -127,4 +137,34 @@ final streams = WebSocketController().channels.map((channel) async* {
 await for (final value in StreamGroup.merge(streams)) {
   yield value;
 }
+```
+
+---
+
+### Resizable Bottom Sheet
+
+Shows Material design's resizable bottom sheet.
+
+#### Example
+
+```dart
+return showResizableBottomSheet(
+  context: context,
+  child: Column(
+    children: [
+      <Widget>,
+      <Widget>,
+      <Widget>,
+    ],
+  ),
+);
+```
+
+---
+
+### Extensions
+
+```dart
+// Launches the URL in the default browser.
+<Uri>.launchInBrowser()
 ```
