@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:logging/logging.dart';
+import 'package:mcomp_plc_utils/src/web_socket/bos/ws_get_message_bo.dart'
+    show WsGetMessageBO;
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_message_bo.dart';
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_messgae_payload_bo.dart';
 import 'package:mcomp_plc_utils/src/web_socket/entities/web_socket_channel_entity.dart';
@@ -94,6 +96,33 @@ class WebSocketController {
       _disconnectChannel(channel);
     }
     _openedChannels.clear();
+  }
+
+  /// Request State Update
+  /// - Parameters:
+  /// - plcId: PLC identifier
+  /// - deviceIds: List of device identifiers
+  void requestStateUpdate({
+    required String plcId,
+    required List<String> deviceIds,
+  }) {
+    final wsChannel = _openedChannels
+        .cast<WebSocketChannelEntity?>()
+        .firstWhere(
+          (channel) => channel?.plcId == plcId,
+          orElse: () => null,
+        )
+        ?.channel;
+
+    if (wsChannel == null) return;
+
+    final message = jsonEncode(
+      WsGetMessageBO(payload: deviceIds),
+    );
+    _logger.info(
+      'Requesting state update of devices: $deviceIds, on PLC: $plcId',
+    );
+    wsChannel.sink.add(message);
   }
 
   /// Disconnect WebSocket channel

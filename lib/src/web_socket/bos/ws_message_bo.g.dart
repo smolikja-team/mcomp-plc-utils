@@ -13,10 +13,14 @@ WsMessageBO _$WsMessageBOFromJson(Map<String, dynamic> json) => WsMessageBO(
       differences: (json['diff'] as List<dynamic>?)
           ?.map((e) => WsMessageItemBO.fromJson(e as Map<String, dynamic>))
           .toList(),
+      requestedItems: (json['get'] as List<dynamic>?)
+          ?.map((e) => WsMessageItemBO.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$WsMessageBOToJson(WsMessageBO instance) =>
     <String, dynamic>{
       'list': instance.items,
       'diff': instance.differences,
+      'get': instance.requestedItems,
     };

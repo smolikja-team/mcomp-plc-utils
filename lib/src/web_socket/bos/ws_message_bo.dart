@@ -6,8 +6,9 @@ part 'ws_message_bo.g.dart';
 @JsonSerializable()
 class WsMessageBO {
   WsMessageBO({
-    required this.items,
-    required this.differences,
+    this.items,
+    this.differences,
+    this.requestedItems,
   });
 
   factory WsMessageBO.fromJson(Map<String, dynamic> json) =>
@@ -18,4 +19,7 @@ class WsMessageBO {
 
   @JsonKey(name: 'diff')
   final List<WsMessageItemBO>? differences;
+
+  @JsonKey(name: 'get')
+  final List<WsMessageItemBO>? requestedItems;
 }
