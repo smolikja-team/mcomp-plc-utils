@@ -16,7 +16,7 @@ class PlcRealBO {
   final String dt;
 
   @JsonKey(name: 'val')
-  double value;
+  final double value;
 
   Map<String, dynamic> toJson() => _$PlcRealBOToJson(this);
 }
