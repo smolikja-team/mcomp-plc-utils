@@ -205,7 +205,7 @@ class CloudMessagingHelper {
     }
 
     const initSettings = InitializationSettings(
-      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+      android: AndroidInitializationSettings('ic_stat_name'),
       iOS: DarwinInitializationSettings(
         requestAlertPermission: false,
         requestBadgePermission: false,
@@ -251,9 +251,19 @@ class CloudMessagingHelper {
     _logger.fine('Show onForeground notif: ${message.messageId}');
 
     if (message.notification != null) {
+      AndroidNotificationDetails? androidDetails;
+      if (Platform.isAndroid && message.notification?.android != null) {
+        androidDetails = AndroidNotificationDetails(
+          _channel.id,
+          _channel.name,
+          channelDescription: _channel.description,
+          icon: message.notification?.android?.smallIcon ?? 'ic_stat_name',
+        );
+      }
+
       _showLocalNotification(
         message.notification!,
-        null,
+        androidDetails,
         message.messageId ?? '|${message.data}',
       );
     }
@@ -274,7 +284,7 @@ class CloudMessagingHelper {
             _channel.id,
             _channel.name,
             channelDescription: _channel.description,
-            icon: android?.icon ?? 'ic_notification',
+            icon: android?.icon ?? 'ic_stat_name',
           ),
         ),
         payload: payload,

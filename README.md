@@ -95,6 +95,10 @@ Helper class for managing Firebase Cloud Messaging (FCM) across different applic
 - Request notification permissions
 - Get device FCM token
 
+#### Setup
+
+Before using the Cloud Messaging Helper, you need to set up the notification icon for Android. See the [Notification Icon Setup](docs/notification_icon_setup.md) guide for detailed instructions.
+
 #### Example
 
 ```dart
