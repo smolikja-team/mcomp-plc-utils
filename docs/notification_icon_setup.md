@@ -57,11 +57,6 @@ In the `android/app/src/main/AndroidManifest.xml` file, add the following line t
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_stat_name" />
             
-        <!-- Dafault color for notifications -->
-        <meta-data
-            android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorAccent" />
-            
         <!-- Other configuration -->
         
     </application>
