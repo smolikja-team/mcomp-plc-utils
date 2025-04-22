@@ -274,7 +274,7 @@ class CloudMessagingHelper {
             _channel.id,
             _channel.name,
             channelDescription: _channel.description,
-            icon: android?.icon,
+            icon: android?.icon ?? 'ic_notification',
           ),
         ),
         payload: payload,
