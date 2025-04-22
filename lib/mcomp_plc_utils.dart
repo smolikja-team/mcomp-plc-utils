@@ -12,6 +12,14 @@ export 'package:mcomp_plc_utils/src/config_fetcher/config_fetcher.dart'
 export 'package:mcomp_plc_utils/src/email_reporting/email_reporting.dart'
     show EmailReporting;
 
+// MARK: - Cloud Messaging Helper
+
+export 'package:mcomp_plc_utils/src/cloud_messaging/cloud_messaging_helper.dart'
+    show
+        CloudMessagingHelper,
+        NotificationDataProcessor,
+        NotificationTapHandler;
+
 // MARK: - WebSocket
 
 export 'package:mcomp_plc_utils/src/web_socket/web_socket_controller.dart'

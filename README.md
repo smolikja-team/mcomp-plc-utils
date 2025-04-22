@@ -12,6 +12,7 @@ Set of utilities for client Flutter apps communicating with mComp's PLC.
 
 [Config Fetcher](#config-fetcher)\
 [Email Reporting](#email-reporting)\
+[Cloud Messaging Helper](#cloud-messaging-helper)\
 [Web Socket](#web-socket)\
 [Resizable Bottom Sheet](#resizable-bottom-sheet)\
 [Extensions](#extensions)
@@ -69,6 +70,73 @@ EmailReporting.composeAnErrorEmail(
     to: ['address@domain.com', 'address1@domain.com'],
     cc: ['address2@domain.com'],
 )
+```
+
+---
+
+### Cloud Messaging Helper
+
+Helper class for managing Firebase Cloud Messaging (FCM) across different applications. Provides functionality for handling push notifications on both Android and iOS platforms.
+
+#### Dependencies
+
+- Logger (needs to be set in the parent app)
+- Firebase Messaging
+- Flutter Local Notifications
+- Shared Preferences
+
+#### Features
+
+- Initialize FCM with customizable callbacks
+- Subscribe/unsubscribe to/from topics
+- Handle foreground and background notifications
+- Process notification data with Map access
+- Handle notification taps with Map access
+- Request notification permissions
+- Get device FCM token
+
+#### Example
+
+```dart
+// Initialize the helper with custom handlers
+await CloudMessagingHelper.init(
+  // Provide topics to subscribe to
+  topicProvider: () async {
+    final homeIds = await getHomeIds();
+    return homeIds.map((id) => 'homeID_$id').toList();
+  },
+
+  // Process notification data as Map
+  dataProcessor: (data) {
+    print('Received notification data: $data');
+    // Access payload via data['payload']
+    final payload = data['payload'] as String;
+    // Store notification or update UI
+  },
+
+  // Handle notification taps with data as Map
+  tapHandler: (data) {
+    // Navigate based on notification data
+    final payload = data['payload'] as String;
+    if (payload.contains('home')) {
+      navigateToHome(payload);
+    }
+  },
+);
+
+// Subscribe to a specific topic
+await CloudMessagingHelper.subscribeToTopic('device_123');
+
+// Get list of subscribed topics
+final topics = await CloudMessagingHelper.getSubscribedTopics();
+print('Currently subscribed to: $topics');
+
+// Unsubscribe from all topics (e.g., at logout)
+await CloudMessagingHelper.unsubscribeFromAllTopics();
+
+// Get device FCM token
+final token = await CloudMessagingHelper.getToken();
+print('Device FCM token: $token');
 ```
 
 ---
