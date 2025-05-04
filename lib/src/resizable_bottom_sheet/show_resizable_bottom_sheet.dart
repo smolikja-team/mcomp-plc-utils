@@ -11,6 +11,9 @@ Future showResizableBottomSheet({
   /// Whether to use bottom padding 80.0.
   bool useBottomPadding = true,
 
+  /// The background color of the bottom sheet.
+  Color? backgroundColor,
+
   /// The minimum height of the bottom sheet.
   double? minHeight,
 
@@ -28,6 +31,7 @@ Future showResizableBottomSheet({
     useSafeArea: true,
     showDragHandle: true,
     isScrollControlled: true,
+    backgroundColor: backgroundColor,
     builder: (BuildContext context) => Container(
       constraints: BoxConstraints(
         minHeight: minHeight ?? 0,
