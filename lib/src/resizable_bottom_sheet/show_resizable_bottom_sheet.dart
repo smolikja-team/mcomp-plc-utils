@@ -14,6 +14,9 @@ Future showResizableBottomSheet({
   /// The background color of the bottom sheet.
   Color? backgroundColor,
 
+  /// The border color of the bottom sheet.
+  Color? borderColor,
+
   /// The minimum height of the bottom sheet.
   double? minHeight,
 
@@ -25,6 +28,10 @@ Future showResizableBottomSheet({
 
   /// The maximum width of the bottom sheet.
   double? maxWidth,
+
+  /// The border radius of the bottom sheet.
+  BorderRadiusGeometry borderRadius =
+      const BorderRadius.vertical(top: Radius.circular(28.0)),
 }) {
   return showModalBottomSheet(
     context: context,
@@ -32,6 +39,14 @@ Future showResizableBottomSheet({
     showDragHandle: true,
     isScrollControlled: true,
     backgroundColor: backgroundColor,
+    shape: RoundedRectangleBorder(
+      borderRadius: borderRadius,
+      side: BorderSide(
+        color: borderColor ?? Colors.transparent,
+        width: 1.0,
+        strokeAlign: 1,
+      ),
+    ),
     builder: (BuildContext context) => Container(
       constraints: BoxConstraints(
         minHeight: minHeight ?? 0,
