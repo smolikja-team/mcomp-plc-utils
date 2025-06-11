@@ -161,6 +161,29 @@ class WebSocketController {
     sendMessage(plcId: plcId, message: message);
   }
 
+  /// Update devices
+  /// - Parameters:
+  /// - plcId: PLC identifier
+  /// - data: List of device identifiers and their updates
+  void updateDevices({
+    required String plcId,
+    required List<({String deviceId, Map<String, dynamic> update})> data,
+  }) {
+    final message = jsonEncode(
+      WsSetMessageBO(
+        payload: data
+            .map(
+              (item) => WsSetMessgaePayloadBO(
+                id: item.deviceId,
+                update: item.update,
+              ),
+            )
+            .toList(),
+      ),
+    );
+    sendMessage(plcId: plcId, message: message);
+  }
+
   /// Send message to WebSocket
   /// - Parameters:
   /// - plcId: PLC identifier
