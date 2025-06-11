@@ -164,14 +164,14 @@ class WebSocketController {
   /// Update devices
   /// - Parameters:
   /// - plcId: PLC identifier
-  /// - data: List of device identifiers and their updates
-  void updateDevices({
-    required String plcId,
-    required List<({String deviceId, Map<String, dynamic> update})> data,
-  }) {
+  /// - update: List of device identifiers and their update data
+  void updateDevices(
+    String plcId,
+    List<({String deviceId, Map<String, dynamic> update})> update,
+  ) {
     final message = jsonEncode(
       WsSetMessageBO(
-        payload: data
+        payload: update
             .map(
               (item) => WsSetMessgaePayloadBO(
                 id: item.deviceId,
