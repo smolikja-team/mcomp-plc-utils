@@ -80,6 +80,12 @@ Future<T?> showResizableBottomSheet<T>({
   /// Whether to use bottom padding 80.0.
   bool useBottomPadding = true,
 
+  /// The background color of the bottom sheet.
+  Color? backgroundColor,
+
+  /// The border color of the bottom sheet.
+  Color? borderColor,
+
   /// The minimum height of the bottom sheet.
   double? minHeight,
 
@@ -91,6 +97,10 @@ Future<T?> showResizableBottomSheet<T>({
 
   /// The maximum width of the bottom sheet.
   double? maxWidth,
+
+  /// The border radius of the bottom sheet.
+  BorderRadiusGeometry borderRadius =
+      const BorderRadius.vertical(top: Radius.circular(28.0)),
 
   /// Whether to enable keyboard avoidance
   bool enableKeyboardAvoidance = false,
@@ -120,11 +130,34 @@ Future<T?> showResizableBottomSheet<T>({
     useSafeArea: useSafeArea,
     showDragHandle: bottomSheetAppearance.showDragHandle,
     isScrollControlled: true,
+    backgroundColor: backgroundColor ?? bottomSheetAppearance.backgroundColor,
+    shape: bottomSheetAppearance.effectiveShape ??
+        RoundedRectangleBorder(
+          borderRadius: borderRadius,
+          side: BorderSide(
+            color: borderColor ?? Colors.transparent,
+            width: 1.0,
+            strokeAlign: 1,
+          ),
+        ),
+    // builder: (BuildContext context) => Container(
+    //   constraints: BoxConstraints(
+    //     minHeight: minHeight ?? 0,
+    //     minWidth: minWidth ?? 0,
+    //     maxHeight: maxHeight ?? double.infinity,
+    //     maxWidth: maxWidth ?? double.infinity,
+    //   ),
+    //   child: SingleChildScrollView(
+    //     child: Padding(
+    //       padding: EdgeInsets.only(bottom: useBottomPadding ? 80.0 : 0.0),
+    //       child: child,
+    //     ),
+    //   ),
+    // ),
+    // );
     isDismissible: isDismissible,
     enableDrag: enableDrag,
-    backgroundColor: bottomSheetAppearance.backgroundColor,
     elevation: bottomSheetAppearance.elevation,
-    shape: bottomSheetAppearance.effectiveShape,
     clipBehavior: bottomSheetAppearance.clipBehavior,
     barrierColor: bottomSheetAppearance.barrierColor,
     builder: (BuildContext context) {
