@@ -170,45 +170,43 @@ print('Device FCM token: $token');
 
 #### Example
 
+#### Example
+
 ```dart
+// Create an instance (NOT a Singleton anymore)
+final controller = WebSocketController();
+
 // Connect
-WebSocketController().connectAll(,
+controller.connectAll([
     (plcId: 'plcId_1', address: 'address_1'),
     (plcId: 'plcId_2', address: 'address_2'),
-);
+]);
 
-WebSocketController().connect(plcId:'plcId_1', address: 'address_1');
+controller.connect(plcId:'plcId_1', address: 'address_1');
 
-// Disconnect
-WebSocketController().disconnectAll();
-
-WebSocketController().disconnect('plcId_1');
-
-// Create a list of streams for each channel
-final streams = WebSocketController().channels.map((channel) async* {
-  await for (final data in channel.channel.stream) {
-    final messageData = jsonDecode(data.toString()) as Map<String, dynamic>;
-    final message = WsMessageBO.fromJson(messageData);
-
-    yield* _processMessageItems(
-      message.items ?? [],
-      cowsheds,
-      channel.plcId,
-      logger,
-    );
-    yield* _processMessageItems(
-      message.differences ?? [],
-      cowsheds,
-      channel.plcId,
-      logger,
-    );
-  }
+// Listen to unified message stream (all PLCs)
+controller.messages.listen((message) {
+  print('Message from ${message.plcId}: ${message.data}');
+  
+  final messageData = jsonDecode(message.data.toString()) as Map<String, dynamic>;
+  final wsMessage = WsMessageBO.fromJson(messageData);
+  // Process message...
 });
 
-// Merge all streams into a single stream
-await for (final value in StreamGroup.merge(streams)) {
-  yield value;
-}
+// Listen to connection status changes
+controller.statusStream.listen((status) {
+  print('PLC ${status.plcId} is ${status.status}');
+});
+
+// Send a message
+controller.requestStateUpdate(
+  plcId: 'plcId_1',
+  deviceIds: ['device_1', 'device_2'],
+);
+
+// Disconnect
+controller.disconnectAll();
+controller.dispose();
 ```
 
 ---
