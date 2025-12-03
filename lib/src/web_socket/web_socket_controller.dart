@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:logging/logging.dart';
@@ -8,24 +9,43 @@ import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_messgae_payload_bo.dar
 import 'package:mcomp_plc_utils/src/web_socket/entities/web_socket_channel_entity.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-class WebSocketController {
-  factory WebSocketController() {
-    return _webSocketController;
-  }
+enum ConnectionStatus { connected, connecting, disconnected, error }
 
-  WebSocketController._internal();
+class WebSocketController {
+  WebSocketController();
 
   static const _kWssProtocols = ['devs'];
   static const _kWssUpdateBody = '{"intent": "list"}';
   static const _kWssAddressPrefix = 'wss://';
 
-  static final WebSocketController _webSocketController =
-      WebSocketController._internal();
-
-  final List<WebSocketChannelEntity> _openedChannels = [];
-  List<WebSocketChannelEntity> get channels => _openedChannels;
-
   final _logger = Logger('WebSocketController');
+
+  // Stream for all messages from all PLCs
+  final _messageController =
+      StreamController<({String plcId, dynamic data})>.broadcast();
+  Stream<({String plcId, dynamic data})> get messages =>
+      _messageController.stream;
+
+  // Stream for connection statuses
+  final _statusController =
+      StreamController<({String plcId, ConnectionStatus status})>.broadcast();
+  Stream<({String plcId, ConnectionStatus status})> get statusStream =>
+      _statusController.stream;
+
+  // Internal state
+  final Map<String, WebSocketChannel> _channels = {};
+  final Map<String, Timer> _reconnectTimers = {};
+  final Map<String, String> _addresses = {};
+
+  List<WebSocketChannelEntity> get channels => _channels.entries
+      .map(
+        (e) => WebSocketChannelEntity(
+          plcId: e.key,
+          address: _addresses[e.key] ?? '',
+          channel: e.value,
+        ),
+      )
+      .toList();
 
   // MARK: - Connection
 
@@ -34,32 +54,72 @@ class WebSocketController {
   /// - plcId: PLC identifier
   /// - address: WebSocket address
   void connect({required String plcId, required String address}) {
-    if (_openedChannels.any((channel) => channel.plcId == plcId)) {
+    if (_channels.containsKey(plcId)) {
       _logger.warning(
         'WebSocket for $plcId, address: $address is already connected',
       );
       return;
     }
 
+    _addresses[plcId] = address;
+    _connectToPlc(plcId, address);
+  }
+
+  void _connectToPlc(String plcId, String address) {
+    _updateStatus(plcId, ConnectionStatus.connecting);
+
     try {
       final channel = WebSocketChannel.connect(
         Uri.parse(_kWssAddressPrefix + address),
         protocols: _kWssProtocols,
       );
-      _openedChannels.add(
-        WebSocketChannelEntity(
-          plcId: plcId,
-          address: address,
-          channel: channel,
-        ),
-      );
+
+      _channels[plcId] = channel;
+
+      // Initial handshake
       channel.sink.add(_kWssUpdateBody);
+      _updateStatus(plcId, ConnectionStatus.connected);
       _logger.info('WebSocket connected to $plcId, address: $address');
+
+      // Listen to messages
+      channel.stream.listen(
+        (data) {
+          _messageController.add((plcId: plcId, data: data));
+        },
+        onError: (error) {
+          _logger.warning('WebSocket error from $plcId: $error');
+          _updateStatus(plcId, ConnectionStatus.error);
+          _scheduleReconnect(plcId);
+        },
+        onDone: () {
+          _logger.warning('WebSocket connection to $plcId closed');
+          _updateStatus(plcId, ConnectionStatus.disconnected);
+          _scheduleReconnect(plcId);
+        },
+        cancelOnError: true,
+      );
     } catch (e) {
       _logger.severe(
         'WebSocket connection to $plcId, address: $address error: $e',
       );
+      _updateStatus(plcId, ConnectionStatus.error);
+      _scheduleReconnect(plcId);
     }
+  }
+
+  void _scheduleReconnect(String plcId) {
+    _channels.remove(plcId); // Cleanup old channel reference
+
+    if (_reconnectTimers.containsKey(plcId)) return; // Already scheduled
+
+    _logger.info('Scheduling reconnect for $plcId in 5 seconds...');
+    _reconnectTimers[plcId] = Timer(const Duration(seconds: 5), () {
+      _reconnectTimers.remove(plcId);
+      final address = _addresses[plcId];
+      if (address != null) {
+        _connectToPlc(plcId, address);
+      }
+    });
   }
 
   /// Connect to multiple WebSocket
@@ -77,26 +137,50 @@ class WebSocketController {
   /// - Parameters:
   /// - plcId: PLC identifier
   void disconnect(String plcId) {
-    try {
-      final channel = _openedChannels.firstWhere(
-        (channel) => channel.plcId == plcId,
-      );
-      _disconnectChannel(channel);
-      _openedChannels.remove(channel);
-    } catch (e) {
-      _logger.severe(
-        'WebSocket for $plcId is not connected and tries to disconnect, error: $e',
-      );
+    _reconnectTimers[plcId]?.cancel();
+    _reconnectTimers.remove(plcId);
+
+    final channel = _channels.remove(plcId);
+    if (channel != null) {
+      _disconnectChannel(channel, plcId);
     }
+    _addresses.remove(plcId);
   }
 
   /// Disconnect all WebSocket
   void disconnectAll() {
-    for (final channel in _openedChannels) {
-      _disconnectChannel(channel);
+    for (final timer in _reconnectTimers.values) {
+      timer.cancel();
     }
-    _openedChannels.clear();
+    _reconnectTimers.clear();
+
+    for (final entry in _channels.entries) {
+      _disconnectChannel(entry.value, entry.key);
+    }
+    _channels.clear();
+    _addresses.clear();
   }
+
+  void _disconnectChannel(WebSocketChannel channel, String plcId) {
+    try {
+      channel.sink.close();
+      _logger.info('WebSocket for $plcId disconnected');
+    } catch (e) {
+      _logger.severe('WebSocket for $plcId disconnect error: $e');
+    }
+  }
+
+  void dispose() {
+    disconnectAll();
+    _messageController.close();
+    _statusController.close();
+  }
+
+  void _updateStatus(String plcId, ConnectionStatus status) {
+    _statusController.add((plcId: plcId, status: status));
+  }
+
+  // MARK: - Sending messages
 
   /// Request State Update
   /// - Parameters:
@@ -106,42 +190,14 @@ class WebSocketController {
     required String plcId,
     required List<String> deviceIds,
   }) {
-    final wsChannel = _openedChannels
-        .cast<WebSocketChannelEntity?>()
-        .firstWhere(
-          (channel) => channel?.plcId == plcId,
-          orElse: () => null,
-        )
-        ?.channel;
-
-    if (wsChannel == null) return;
-
     final message = jsonEncode(
       WsGetMessageBO(payload: deviceIds),
     );
     _logger.info(
       'Requesting state update of devices: $deviceIds, on PLC: $plcId',
     );
-    wsChannel.sink.add(message);
+    sendMessage(plcId: plcId, message: message);
   }
-
-  /// Disconnect WebSocket channel
-  /// - Parameters:
-  /// - channel: WebSocket channel
-  void _disconnectChannel(WebSocketChannelEntity channel) {
-    try {
-      channel.channel.sink.close();
-      _logger.info(
-        'WebSocked for ${channel.plcId} with ${channel.address} disconnected',
-      );
-    } catch (e) {
-      _logger.severe(
-        'WebSocket for ${channel.plcId} with ${channel.address} disconnect error: $e',
-      );
-    }
-  }
-
-  // MARK: - Sending messages
 
   /// Update device
   /// - Parameters:
@@ -193,9 +249,12 @@ class WebSocketController {
     required String message,
   }) {
     try {
-      final channel =
-          _openedChannels.firstWhere((channel) => channel.plcId == plcId);
-      channel.channel.sink.add(message);
+      final channel = _channels[plcId];
+      if (channel != null) {
+        channel.sink.add(message);
+      } else {
+        _logger.warning('Cannot send message: WebSocket for $plcId not connected');
+      }
     } catch (e) {
       _logger.severe('Error sending message to $plcId, error: $e');
     }
