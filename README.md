@@ -169,14 +169,24 @@ print('Device FCM token: $token');
 
 #### Dependencies
 - Logger (needs to be set in the parent app)
-- PLC ID and PLC address for communication
+- PLC ID and addresses for communication
 
 #### Features
 
+- **Local network fallback** - prioritizes local network, falls back to public internet
+- **Parallel race connection** - attempts both connections simultaneously for fastest response
 - **Automatic reconnection** with exponential backoff (1s → 30s max)
 - **Connection status monitoring** via `statusStream`
 - **Multi-PLC support** - manage multiple WebSocket connections
 - **Proper resource cleanup** - subscriptions and timers are correctly disposed
+
+#### Connection Strategy
+
+1. If `localAddress` is provided, both connections are attempted simultaneously
+2. Local connection has priority with 2-second timeout
+3. If local succeeds first, public connection is cancelled
+4. If local fails or times out, public connection is used
+5. On reconnect, always tries local first (if available)
 
 #### Output
 
@@ -197,19 +207,28 @@ print('Device FCM token: $token');
 
 #### Example
 
-#### Example
-
 ```dart
 // Create an instance (NOT a Singleton anymore)
 final controller = WebSocketController();
 
-// Connect
-controller.connectAll([
-    (plcId: 'plcId_1', address: 'address_1'),
-    (plcId: 'plcId_2', address: 'address_2'),
-]);
+// Connect with local network support (recommended)
+controller.connect(
+  plcId: 'plcId_1',
+  localAddress: '192.168.1.100/ws',  // Optional - local network address
+  publicAddress: 'plc.example.com/ws', // Required - public internet address
+);
 
-controller.connect(plcId:'plcId_1', address: 'address_1');
+// Connect without local network (backward compatible)
+controller.connect(
+  plcId: 'plcId_2',
+  publicAddress: 'plc.example.com/ws',
+);
+
+// Connect multiple PLCs
+controller.connectAll([
+  (plcId: 'plcId_1', localAddress: '192.168.1.100/ws', publicAddress: 'plc1.example.com/ws'),
+  (plcId: 'plcId_2', localAddress: null, publicAddress: 'plc2.example.com/ws'),
+]);
 
 // Listen to unified message stream (all PLCs)
 controller.messages.listen((message) {

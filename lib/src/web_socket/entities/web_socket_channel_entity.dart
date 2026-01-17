@@ -3,11 +3,15 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 part 'web_socket_channel_entity.freezed.dart';
 
+/// Type of connection used for WebSocket
+enum ConnectionType { local, public }
+
 @freezed
 abstract class WebSocketChannelEntity with _$WebSocketChannelEntity {
   const factory WebSocketChannelEntity({
     required String plcId,
     required String address,
     required WebSocketChannel channel,
+    required ConnectionType connectionType,
   }) = _WebSocketChannelEntity;
 }

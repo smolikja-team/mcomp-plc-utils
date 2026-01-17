@@ -1,4 +1,5 @@
-import 'dart:async';
+import 'dart:async'
+    show Completer, StreamController, StreamSubscription, Timer, unawaited;
 import 'dart:convert';
 import 'dart:math' show min, pow;
 
@@ -7,6 +8,7 @@ import 'package:mcomp_plc_utils/src/web_socket/bos/ws_get_message_bo.dart'
     show WsGetMessageBO;
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_message_bo.dart';
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_message_payload_bo.dart';
+import 'package:mcomp_plc_utils/src/web_socket/entities/plc_addresses.dart';
 import 'package:mcomp_plc_utils/src/web_socket/entities/web_socket_channel_entity.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -19,6 +21,7 @@ class WebSocketController {
   static const _kWssUpdateBody = '{"intent": "list"}';
   static const _kWssAddressPrefix = 'wss://';
   static const _kMaxReconnectDelaySeconds = 30;
+  static const _kLocalConnectionTimeoutSeconds = 2;
 
   final _logger = Logger('WebSocketController');
 
@@ -38,15 +41,17 @@ class WebSocketController {
   final Map<String, WebSocketChannel> _channels = {};
   final Map<String, StreamSubscription<dynamic>> _subscriptions = {};
   final Map<String, Timer> _reconnectTimers = {};
-  final Map<String, String> _addresses = {};
+  final Map<String, PlcAddresses> _addresses = {};
   final Map<String, int> _reconnectAttempts = {};
+  final Map<String, ConnectionType> _connectionTypes = {};
 
   List<WebSocketChannelEntity> get channels => _channels.entries
       .map(
         (e) => WebSocketChannelEntity(
           plcId: e.key,
-          address: _addresses[e.key] ?? '',
+          address: _addresses[e.key]?.publicAddress ?? '',
           channel: e.value,
+          connectionType: _connectionTypes[e.key] ?? ConnectionType.public,
         ),
       )
       .toList();
@@ -56,59 +61,172 @@ class WebSocketController {
   /// Connect to WebSocket
   /// - Parameters:
   /// - plcId: PLC identifier
-  /// - address: WebSocket address
-  void connect({required String plcId, required String address}) {
+  /// - localAddress: Optional local network address (prioritized)
+  /// - publicAddress: Public internet address (fallback)
+  void connect({
+    required String plcId,
+    String? localAddress,
+    required String publicAddress,
+  }) {
     if (_channels.containsKey(plcId)) {
-      _logger.warning(
-        'WebSocket for $plcId, address: $address is already connected',
+      _logger.warning('WebSocket for $plcId is already connected');
+      return;
+    }
+
+    final addresses = PlcAddresses(
+      localAddress: localAddress,
+      publicAddress: publicAddress,
+    );
+    _addresses[plcId] = addresses;
+    _reconnectAttempts[plcId] = 0;
+    _connectWithRace(plcId, addresses);
+  }
+
+  /// Internal method to attempt connection with parallel race strategy.
+  /// If localAddress is provided, both connections are attempted simultaneously.
+  /// The first successful connection wins, the other is cancelled.
+  Future<void> _connectWithRace(String plcId, PlcAddresses addresses) async {
+    _updateStatus(plcId, ConnectionStatus.connecting);
+
+    // If no local address, connect directly via public
+    if (addresses.localAddress == null) {
+      await _attemptSingleConnection(
+        plcId,
+        addresses.publicAddress,
+        ConnectionType.public,
       );
       return;
     }
 
-    _addresses[plcId] = address;
-    _reconnectAttempts[plcId] = 0;
-    _connectToPlc(plcId, address);
+    // Parallel race: try both connections simultaneously
+    final completer =
+        Completer<({WebSocketChannel channel, ConnectionType type})>();
+    WebSocketChannel? localChannel;
+    WebSocketChannel? publicChannel;
+    var localDone = false;
+    var publicDone = false;
+
+    // Attempt local connection
+    unawaited(
+      _attemptRaceConnection(addresses.localAddress!)
+          .then((channel) {
+            localChannel = channel;
+            localDone = true;
+            if (!completer.isCompleted && channel != null) {
+              completer.complete((
+                channel: channel,
+                type: ConnectionType.local,
+              ));
+            }
+          })
+          .catchError((Object e) {
+            localDone = true;
+            _logger.fine('Local connection failed for $plcId: $e');
+            // If public also failed, complete with error
+            if (publicDone && !completer.isCompleted) {
+              completer.completeError(e);
+            }
+          }),
+    );
+
+    // Attempt public connection
+    unawaited(
+      _attemptRaceConnection(addresses.publicAddress)
+          .then((channel) {
+            publicChannel = channel;
+            publicDone = true;
+            if (!completer.isCompleted && channel != null) {
+              // Only complete with public if local hasn't won yet
+              // Give local a slight priority window
+              unawaited(
+                Future.delayed(
+                  const Duration(seconds: _kLocalConnectionTimeoutSeconds),
+                  () {
+                    if (!completer.isCompleted) {
+                      completer.complete((
+                        channel: channel,
+                        type: ConnectionType.public,
+                      ));
+                    }
+                  },
+                ),
+              );
+            }
+          })
+          .catchError((Object e) {
+            publicDone = true;
+            _logger.warning('Public connection failed for $plcId: $e');
+            // If local also failed, complete with error
+            if (localDone && !completer.isCompleted) {
+              completer.completeError(e);
+            }
+          }),
+    );
+
+    // Also set a timeout for local to ensure public can win if local is slow
+    unawaited(
+      Future.delayed(
+        const Duration(seconds: _kLocalConnectionTimeoutSeconds),
+        () {
+          if (!completer.isCompleted && publicChannel != null) {
+            completer.complete((
+              channel: publicChannel!,
+              type: ConnectionType.public,
+            ));
+          }
+        },
+      ),
+    );
+
+    try {
+      final result = await completer.future;
+
+      // Close the losing connection
+      if (result.type == ConnectionType.local) {
+        unawaited(publicChannel?.sink.close());
+        _logger.info('Using local connection for $plcId');
+      } else {
+        unawaited(localChannel?.sink.close());
+        _logger.info('Using public connection for $plcId');
+      }
+
+      // Finalize the winning connection
+      await _finalizeConnection(plcId, result.channel, result.type);
+    } catch (e) {
+      _logger.severe('All connections failed for $plcId: $e');
+      _channels.remove(plcId);
+      _updateStatus(plcId, ConnectionStatus.error);
+      _scheduleReconnect(plcId);
+    }
   }
 
-  Future<void> _connectToPlc(String plcId, String address) async {
-    _updateStatus(plcId, ConnectionStatus.connecting);
-
+  /// Attempts a single connection for race. Returns channel or null on failure.
+  Future<WebSocketChannel?> _attemptRaceConnection(String address) async {
     try {
       final channel = WebSocketChannel.connect(
         Uri.parse(_kWssAddressPrefix + address),
         protocols: _kWssProtocols,
       );
-
-      _channels[plcId] = channel;
-
-      // Wait for WebSocket to be ready before sending messages
       await channel.ready;
+      return channel;
+    } catch (e) {
+      return null;
+    }
+  }
 
-      // Reset reconnect attempts on successful connection
-      _reconnectAttempts[plcId] = 0;
-
-      // Initial handshake
-      channel.sink.add(_kWssUpdateBody);
-      _updateStatus(plcId, ConnectionStatus.connected);
-      _logger.info('WebSocket connected to $plcId, address: $address');
-
-      // Listen to messages and store subscription for proper cleanup
-      _subscriptions[plcId] = channel.stream.listen(
-        (data) {
-          _messageController.add((plcId: plcId, data: data));
-        },
-        onError: (Object error) {
-          _logger.warning('WebSocket error from $plcId: $error');
-          _updateStatus(plcId, ConnectionStatus.error);
-          _scheduleReconnect(plcId);
-        },
-        onDone: () {
-          _logger.warning('WebSocket connection to $plcId closed');
-          _updateStatus(plcId, ConnectionStatus.disconnected);
-          _scheduleReconnect(plcId);
-        },
-        cancelOnError: true,
+  /// Attempts a single connection (used when no local address is provided)
+  Future<void> _attemptSingleConnection(
+    String plcId,
+    String address,
+    ConnectionType type,
+  ) async {
+    try {
+      final channel = WebSocketChannel.connect(
+        Uri.parse(_kWssAddressPrefix + address),
+        protocols: _kWssProtocols,
       );
+      await channel.ready;
+      await _finalizeConnection(plcId, channel, type);
     } on WebSocketChannelException catch (e) {
       _logger.severe(
         'WebSocket channel exception for $plcId, address: $address: $e',
@@ -126,6 +244,48 @@ class WebSocketController {
     }
   }
 
+  /// Finalizes a successful connection - sets up listeners and updates state
+  Future<void> _finalizeConnection(
+    String plcId,
+    WebSocketChannel channel,
+    ConnectionType type,
+  ) async {
+    _channels[plcId] = channel;
+    _connectionTypes[plcId] = type;
+
+    // Reset reconnect attempts on successful connection
+    _reconnectAttempts[plcId] = 0;
+
+    // Initial handshake
+    channel.sink.add(_kWssUpdateBody);
+    _updateStatus(plcId, ConnectionStatus.connected);
+
+    final address = type == ConnectionType.local
+        ? _addresses[plcId]?.localAddress
+        : _addresses[plcId]?.publicAddress;
+    _logger.info(
+      'WebSocket connected to $plcId via ${type.name}, address: $address',
+    );
+
+    // Listen to messages and store subscription for proper cleanup
+    _subscriptions[plcId] = channel.stream.listen(
+      (data) {
+        _messageController.add((plcId: plcId, data: data));
+      },
+      onError: (Object error) {
+        _logger.warning('WebSocket error from $plcId: $error');
+        _updateStatus(plcId, ConnectionStatus.error);
+        _scheduleReconnect(plcId);
+      },
+      onDone: () {
+        _logger.warning('WebSocket connection to $plcId closed');
+        _updateStatus(plcId, ConnectionStatus.disconnected);
+        _scheduleReconnect(plcId);
+      },
+      cancelOnError: true,
+    );
+  }
+
   /// Calculate reconnect delay with exponential backoff
   int _getReconnectDelaySeconds(String plcId) {
     final attempts = _reconnectAttempts[plcId] ?? 0;
@@ -135,6 +295,7 @@ class WebSocketController {
   void _scheduleReconnect(String plcId) {
     // Cleanup old channel and subscription references
     _channels.remove(plcId);
+    _connectionTypes.remove(plcId);
     _subscriptions[plcId]?.cancel();
     _subscriptions.remove(plcId);
 
@@ -147,19 +308,27 @@ class WebSocketController {
     _logger.info('Scheduling reconnect for $plcId in $delaySeconds seconds...');
     _reconnectTimers[plcId] = Timer(Duration(seconds: delaySeconds), () {
       _reconnectTimers.remove(plcId);
-      final address = _addresses[plcId];
-      if (address != null) {
-        _connectToPlc(plcId, address);
+      final addresses = _addresses[plcId];
+      if (addresses != null) {
+        // Always try local first on reconnect (if available)
+        _connectWithRace(plcId, addresses);
       }
     });
   }
 
   /// Connect to multiple WebSocket
   /// - Parameters:
-  /// - connections: List of PLC IP and WebSocket address
-  void connectAll(List<({String plcId, String address})> connections) {
+  /// - connections: List of PLC connections with local and public addresses
+  void connectAll(
+    List<({String plcId, String? localAddress, String publicAddress})>
+    connections,
+  ) {
     for (final connection in connections) {
-      connect(plcId: connection.plcId, address: connection.address);
+      connect(
+        plcId: connection.plcId,
+        localAddress: connection.localAddress,
+        publicAddress: connection.publicAddress,
+      );
     }
   }
 
@@ -181,6 +350,7 @@ class WebSocketController {
       _disconnectChannel(channel, plcId);
     }
     _addresses.remove(plcId);
+    _connectionTypes.remove(plcId);
   }
 
   /// Disconnect all WebSocket
@@ -201,6 +371,7 @@ class WebSocketController {
     }
     _channels.clear();
     _addresses.clear();
+    _connectionTypes.clear();
   }
 
   void _disconnectChannel(WebSocketChannel channel, String plcId) {
@@ -232,9 +403,7 @@ class WebSocketController {
     required String plcId,
     required List<String> deviceIds,
   }) {
-    final message = jsonEncode(
-      WsGetMessageBO(payload: deviceIds),
-    );
+    final message = jsonEncode(WsGetMessageBO(payload: deviceIds));
     _logger.info(
       'Requesting state update of devices: $deviceIds, on PLC: $plcId',
     );
@@ -271,10 +440,8 @@ class WebSocketController {
       WsSetMessageBO(
         payload: update
             .map(
-              (item) => WsSetMessagePayloadBO(
-                id: item.deviceId,
-                update: item.update,
-              ),
+              (item) =>
+                  WsSetMessagePayloadBO(id: item.deviceId, update: item.update),
             )
             .toList(),
       ),
@@ -286,17 +453,15 @@ class WebSocketController {
   /// - Parameters:
   /// - plcId: PLC identifier
   /// - message: Message to send
-  void sendMessage({
-    required String plcId,
-    required String message,
-  }) {
+  void sendMessage({required String plcId, required String message}) {
     try {
       final channel = _channels[plcId];
       if (channel != null) {
         channel.sink.add(message);
       } else {
-        _logger
-            .warning('Cannot send message: WebSocket for $plcId not connected');
+        _logger.warning(
+          'Cannot send message: WebSocket for $plcId not connected',
+        );
       }
     } catch (e) {
       _logger.severe('Error sending message to $plcId, error: $e');
