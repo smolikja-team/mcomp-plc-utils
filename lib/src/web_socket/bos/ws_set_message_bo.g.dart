@@ -15,7 +15,4 @@ _WsSetMessageBO _$WsSetMessageBOFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$WsSetMessageBOToJson(_WsSetMessageBO instance) =>
-    <String, dynamic>{
-      'intent': instance.intent,
-      'payload': instance.payload,
-    };
+    <String, dynamic>{'intent': instance.intent, 'payload': instance.payload};

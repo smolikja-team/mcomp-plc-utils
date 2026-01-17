@@ -13,7 +13,4 @@ _WsMessageItemBO _$WsMessageItemBOFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$WsMessageItemBOToJson(_WsMessageItemBO instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'props': instance.value,
-    };
+    <String, dynamic>{'id': instance.id, 'props': instance.value};

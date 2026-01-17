@@ -7,11 +7,11 @@ part of 'plc_tod_bo.dart';
 // **************************************************************************
 
 _PlcTodBO _$PlcTodBOFromJson(Map<String, dynamic> json) => _PlcTodBO(
-      value: (json['val'] as num).toDouble(),
-      dt: json['dt'] as String? ?? 'TOD',
-    );
+  value: (json['val'] as num).toDouble(),
+  dt: json['dt'] as String? ?? 'TOD',
+);
 
 Map<String, dynamic> _$PlcTodBOToJson(_PlcTodBO instance) => <String, dynamic>{
-      'val': instance.value,
-      'dt': instance.dt,
-    };
+  'val': instance.value,
+  'dt': instance.dt,
+};

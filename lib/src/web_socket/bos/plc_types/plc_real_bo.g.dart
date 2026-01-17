@@ -7,12 +7,9 @@ part of 'plc_real_bo.dart';
 // **************************************************************************
 
 _PlcRealBO _$PlcRealBOFromJson(Map<String, dynamic> json) => _PlcRealBO(
-      value: (json['val'] as num).toDouble(),
-      dt: json['dt'] as String? ?? 'REAL',
-    );
+  value: (json['val'] as num).toDouble(),
+  dt: json['dt'] as String? ?? 'REAL',
+);
 
 Map<String, dynamic> _$PlcRealBOToJson(_PlcRealBO instance) =>
-    <String, dynamic>{
-      'val': instance.value,
-      'dt': instance.dt,
-    };
+    <String, dynamic>{'val': instance.value, 'dt': instance.dt};
