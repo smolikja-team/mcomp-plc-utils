@@ -6,12 +6,12 @@ part of 'plc_int_bo.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PlcIntBO _$PlcIntBOFromJson(Map<String, dynamic> json) => PlcIntBO(
+_PlcIntBO _$PlcIntBOFromJson(Map<String, dynamic> json) => _PlcIntBO(
       value: (json['val'] as num).toInt(),
       dt: json['dt'] as String? ?? 'USINT',
     );
 
-Map<String, dynamic> _$PlcIntBOToJson(PlcIntBO instance) => <String, dynamic>{
-      'dt': instance.dt,
+Map<String, dynamic> _$PlcIntBOToJson(_PlcIntBO instance) => <String, dynamic>{
       'val': instance.value,
+      'dt': instance.dt,
     };

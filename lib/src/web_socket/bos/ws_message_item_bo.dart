@@ -1,19 +1,17 @@
-import 'package:json_annotation/json_annotation.dart';
+// ignore_for_file: invalid_annotation_target
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'ws_message_item_bo.freezed.dart';
 part 'ws_message_item_bo.g.dart';
 
-@JsonSerializable()
-class WsMessageItemBO {
-  WsMessageItemBO({
-    required this.id,
-    required this.value,
-  });
+@freezed
+abstract class WsMessageItemBO with _$WsMessageItemBO {
+  const factory WsMessageItemBO({
+    required String id,
+    @JsonKey(name: 'props') required Map<String, dynamic> value,
+  }) = _WsMessageItemBO;
 
   factory WsMessageItemBO.fromJson(Map<String, dynamic> json) =>
       _$WsMessageItemBOFromJson(json);
-
-  final String id;
-
-  @JsonKey(name: 'props')
-  final Map<String, dynamic> value;
 }

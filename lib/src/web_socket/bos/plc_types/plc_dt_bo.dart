@@ -1,22 +1,17 @@
-import 'package:json_annotation/json_annotation.dart';
+// ignore_for_file: invalid_annotation_target
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'plc_dt_bo.freezed.dart';
 part 'plc_dt_bo.g.dart';
 
-@JsonSerializable()
-class PlcDtBO {
-  PlcDtBO({
-    required this.value,
-    this.dt = 'DT',
-  });
+@freezed
+abstract class PlcDtBO with _$PlcDtBO {
+  const factory PlcDtBO({
+    @JsonKey(name: 'val') required double value,
+    @Default('DT') String dt,
+  }) = _PlcDtBO;
 
   factory PlcDtBO.fromJson(Map<String, dynamic> json) =>
       _$PlcDtBOFromJson(json);
-
-  @JsonKey()
-  final String dt;
-
-  @JsonKey(name: 'val')
-  final double value;
-
-  Map<String, dynamic> toJson() => _$PlcDtBOToJson(this);
 }

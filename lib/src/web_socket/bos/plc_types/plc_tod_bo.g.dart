@@ -6,12 +6,12 @@ part of 'plc_tod_bo.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PlcTodBO _$PlcTodBOFromJson(Map<String, dynamic> json) => PlcTodBO(
+_PlcTodBO _$PlcTodBOFromJson(Map<String, dynamic> json) => _PlcTodBO(
       value: (json['val'] as num).toDouble(),
       dt: json['dt'] as String? ?? 'TOD',
     );
 
-Map<String, dynamic> _$PlcTodBOToJson(PlcTodBO instance) => <String, dynamic>{
-      'dt': instance.dt,
+Map<String, dynamic> _$PlcTodBOToJson(_PlcTodBO instance) => <String, dynamic>{
       'val': instance.value,
+      'dt': instance.dt,
     };
