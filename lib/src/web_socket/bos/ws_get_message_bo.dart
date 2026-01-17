@@ -1,16 +1,17 @@
-import 'package:json_annotation/json_annotation.dart';
+// ignore_for_file: invalid_annotation_target
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'ws_get_message_bo.freezed.dart';
 part 'ws_get_message_bo.g.dart';
 
-@JsonSerializable(explicitToJson: true)
-class WsGetMessageBO {
-  WsGetMessageBO({required this.payload});
+@freezed
+abstract class WsGetMessageBO with _$WsGetMessageBO {
+  const factory WsGetMessageBO({
+    @Default('get') String intent,
+    required List<String> payload,
+  }) = _WsGetMessageBO;
 
   factory WsGetMessageBO.fromJson(Map<String, dynamic> json) =>
       _$WsGetMessageBOFromJson(json);
-
-  String intent = 'get';
-  List<String> payload;
-
-  Map<String, dynamic> toJson() => _$WsGetMessageBOToJson(this);
 }

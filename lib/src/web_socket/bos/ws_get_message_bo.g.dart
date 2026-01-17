@@ -6,13 +6,14 @@ part of 'ws_get_message_bo.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-WsGetMessageBO _$WsGetMessageBOFromJson(Map<String, dynamic> json) =>
-    WsGetMessageBO(
+_WsGetMessageBO _$WsGetMessageBOFromJson(Map<String, dynamic> json) =>
+    _WsGetMessageBO(
+      intent: json['intent'] as String? ?? 'get',
       payload:
           (json['payload'] as List<dynamic>).map((e) => e as String).toList(),
-    )..intent = json['intent'] as String;
+    );
 
-Map<String, dynamic> _$WsGetMessageBOToJson(WsGetMessageBO instance) =>
+Map<String, dynamic> _$WsGetMessageBOToJson(_WsGetMessageBO instance) =>
     <String, dynamic>{
       'intent': instance.intent,
       'payload': instance.payload,

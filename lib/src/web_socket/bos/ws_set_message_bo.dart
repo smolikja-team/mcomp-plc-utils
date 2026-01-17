@@ -1,17 +1,18 @@
-import 'package:json_annotation/json_annotation.dart';
-import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_messgae_payload_bo.dart';
+// ignore_for_file: invalid_annotation_target
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_message_payload_bo.dart';
+
+part 'ws_set_message_bo.freezed.dart';
 part 'ws_set_message_bo.g.dart';
 
-@JsonSerializable(explicitToJson: true)
-class WsSetMessageBO {
-  WsSetMessageBO({required this.payload});
+@freezed
+abstract class WsSetMessageBO with _$WsSetMessageBO {
+  const factory WsSetMessageBO({
+    @Default('set') String intent,
+    required List<WsSetMessagePayloadBO> payload,
+  }) = _WsSetMessageBO;
 
   factory WsSetMessageBO.fromJson(Map<String, dynamic> json) =>
       _$WsSetMessageBOFromJson(json);
-
-  String intent = 'set';
-  List<WsSetMessgaePayloadBO> payload;
-
-  Map<String, dynamic> toJson() => _$WsSetMessageBOToJson(this);
 }
