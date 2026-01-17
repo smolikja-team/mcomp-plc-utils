@@ -183,7 +183,7 @@ print('Device FCM token: $token');
 #### Connection Strategy
 
 1. If `localAddress` is provided, both connections are attempted simultaneously
-2. Local connection has priority with 2-second timeout
+2. Local connection has priority with 1-second timeout
 3. If local succeeds first, public connection is cancelled
 4. If local fails or times out, public connection is used
 5. On reconnect, always tries local first (if available)
@@ -208,8 +208,11 @@ print('Device FCM token: $token');
 #### Example
 
 ```dart
-// Create an instance (NOT a Singleton anymore)
-final controller = WebSocketController();
+// Create an instance with custom timeout (default: 1 second)
+final controller = WebSocketController(localConnectionTimeoutSeconds: 2);
+
+// Or use default timeout
+final defaultController = WebSocketController();
 
 // Connect with local network support (recommended)
 controller.connect(

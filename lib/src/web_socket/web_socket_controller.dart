@@ -15,13 +15,18 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 enum ConnectionStatus { connected, connecting, disconnected, error }
 
 class WebSocketController {
-  WebSocketController();
+  /// Creates a WebSocketController.
+  /// - [localConnectionTimeoutSeconds]: Timeout for local network connection
+  ///   before falling back to public. Default: 1 second.
+  WebSocketController({this.localConnectionTimeoutSeconds = 1});
 
   static const _kWssProtocols = ['devs'];
   static const _kWssUpdateBody = '{"intent": "list"}';
   static const _kWssAddressPrefix = 'wss://';
   static const _kMaxReconnectDelaySeconds = 30;
-  static const _kLocalConnectionTimeoutSeconds = 2;
+
+  /// Timeout in seconds for local network connection attempts.
+  final int localConnectionTimeoutSeconds;
 
   final _logger = Logger('WebSocketController');
 
@@ -140,7 +145,7 @@ class WebSocketController {
               // Give local a slight priority window
               unawaited(
                 Future.delayed(
-                  const Duration(seconds: _kLocalConnectionTimeoutSeconds),
+                  Duration(seconds: localConnectionTimeoutSeconds),
                   () {
                     if (!completer.isCompleted) {
                       completer.complete((
@@ -165,17 +170,14 @@ class WebSocketController {
 
     // Also set a timeout for local to ensure public can win if local is slow
     unawaited(
-      Future.delayed(
-        const Duration(seconds: _kLocalConnectionTimeoutSeconds),
-        () {
-          if (!completer.isCompleted && publicChannel != null) {
-            completer.complete((
-              channel: publicChannel!,
-              type: ConnectionType.public,
-            ));
-          }
-        },
-      ),
+      Future.delayed(Duration(seconds: localConnectionTimeoutSeconds), () {
+        if (!completer.isCompleted && publicChannel != null) {
+          completer.complete((
+            channel: publicChannel!,
+            type: ConnectionType.public,
+          ));
+        }
+      }),
     );
 
     try {
