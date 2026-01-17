@@ -7,6 +7,12 @@ library;
 export 'package:mcomp_plc_utils/src/config_fetcher/config_fetcher.dart'
     show ConfigFetcher;
 
+export 'package:mcomp_plc_utils/src/config_fetcher/storage/config_cache_storage.dart'
+    show ConfigCacheStorage;
+
+export 'package:mcomp_plc_utils/src/config_fetcher/storage/file_config_cache_storage.dart'
+    show FileConfigCacheStorage;
+
 // MARK: - Email Reporting
 
 export 'package:mcomp_plc_utils/src/email_reporting/email_reporting.dart'
