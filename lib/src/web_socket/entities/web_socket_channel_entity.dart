@@ -1,17 +1,13 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-class WebSocketChannelEntity extends Equatable {
-  const WebSocketChannelEntity({
-    required this.plcId,
-    required this.address,
-    required this.channel,
-  });
+part 'web_socket_channel_entity.freezed.dart';
 
-  final String plcId;
-  final String address;
-  final WebSocketChannel channel;
-
-  @override
-  List<Object?> get props => [plcId, address, channel];
+@freezed
+abstract class WebSocketChannelEntity with _$WebSocketChannelEntity {
+  const factory WebSocketChannelEntity({
+    required String plcId,
+    required String address,
+    required WebSocketChannel channel,
+  }) = _WebSocketChannelEntity;
 }
