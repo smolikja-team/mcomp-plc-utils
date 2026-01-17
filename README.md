@@ -21,7 +21,14 @@ Set of utilities for client Flutter apps communicating with mComp's PLC.
 
 ### Config Fetcher
 
-Fetches list of assigned PLCs app is able to communicate with from Firebase as a Dart Map.
+Fetches list of assigned PLCs app is able to communicate with from Firebase as a Dart Map. Supports **offline-first caching** with automatic fallback.
+
+#### Features
+
+- **Offline caching** - configurations are cached locally for offline use
+- **MD5 validation** - only downloads when config changes on Firebase
+- **Automatic fallback** - returns cached data when network is unavailable
+- **Per-user isolation** - each user has separate cache storage
 
 #### Dependencies
 
@@ -33,17 +40,30 @@ Fetches list of assigned PLCs app is able to communicate with from Firebase as a
 #### Output
 
 - List of PLC configurations assigned to user
-- Each PLC configuratio is represented as Map<String, dynamic>
-- Map can be serialized to a coustom PLC object
+- Each PLC configuration is represented as `Map<String, dynamic>`
+- Map can be serialized to a custom PLC object
 
 #### Example
 
 ```dart
+// Normal fetch (uses cache if available and valid)
 final usersPlcsAsMap = await ConfigFetcher.fetchUsersPlcs();
 
+// Force refresh from Firebase (bypass cache)
+final freshConfigs = await ConfigFetcher.fetchUsersPlcs(forceRefresh: true);
+
+// Convert to objects
 final listOfPlcObjects = usersPlcsAsMap.map((userPlc) {
     return PlcObject.fromJson(userPlc);
 }).toList();
+```
+
+#### Cache Management
+
+```dart
+// Clear user's cache on logout
+final storage = FileConfigCacheStorage();
+await storage.clearUserCache(userId);
 ```
 
 ---
