@@ -11,49 +11,47 @@ part of 'web_socket_channel_entity.dart';
 
 // dart format off
 T _$identity<T>(T value) => value;
-
 /// @nodoc
 mixin _$WebSocketChannelEntity {
-  String get plcId;
-  String get address;
-  WebSocketChannel get channel;
 
-  /// Create a copy of WebSocketChannelEntity
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  $WebSocketChannelEntityCopyWith<WebSocketChannelEntity> get copyWith =>
-      _$WebSocketChannelEntityCopyWithImpl<WebSocketChannelEntity>(
-          this as WebSocketChannelEntity, _$identity);
+ String get plcId; String get address; WebSocketChannel get channel; ConnectionType get connectionType;
+/// Create a copy of WebSocketChannelEntity
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WebSocketChannelEntityCopyWith<WebSocketChannelEntity> get copyWith => _$WebSocketChannelEntityCopyWithImpl<WebSocketChannelEntity>(this as WebSocketChannelEntity, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is WebSocketChannelEntity &&
-            (identical(other.plcId, plcId) || other.plcId == plcId) &&
-            (identical(other.address, address) || other.address == address) &&
-            (identical(other.channel, channel) || other.channel == channel));
-  }
 
-  @override
-  int get hashCode => Object.hash(runtimeType, plcId, address, channel);
 
-  @override
-  String toString() {
-    return 'WebSocketChannelEntity(plcId: $plcId, address: $address, channel: $channel)';
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WebSocketChannelEntity&&(identical(other.plcId, plcId) || other.plcId == plcId)&&(identical(other.address, address) || other.address == address)&&(identical(other.channel, channel) || other.channel == channel)&&(identical(other.connectionType, connectionType) || other.connectionType == connectionType));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,plcId,address,channel,connectionType);
+
+@override
+String toString() {
+  return 'WebSocketChannelEntity(plcId: $plcId, address: $address, channel: $channel, connectionType: $connectionType)';
+}
+
+
 }
 
 /// @nodoc
-abstract mixin class $WebSocketChannelEntityCopyWith<$Res> {
-  factory $WebSocketChannelEntityCopyWith(WebSocketChannelEntity value,
-          $Res Function(WebSocketChannelEntity) _then) =
-      _$WebSocketChannelEntityCopyWithImpl;
-  @useResult
-  $Res call({String plcId, String address, WebSocketChannel channel});
-}
+abstract mixin class $WebSocketChannelEntityCopyWith<$Res>  {
+  factory $WebSocketChannelEntityCopyWith(WebSocketChannelEntity value, $Res Function(WebSocketChannelEntity) _then) = _$WebSocketChannelEntityCopyWithImpl;
+@useResult
+$Res call({
+ String plcId, String address, WebSocketChannel channel, ConnectionType connectionType
+});
 
+
+
+
+}
 /// @nodoc
 class _$WebSocketChannelEntityCopyWithImpl<$Res>
     implements $WebSocketChannelEntityCopyWith<$Res> {
@@ -62,244 +60,200 @@ class _$WebSocketChannelEntityCopyWithImpl<$Res>
   final WebSocketChannelEntity _self;
   final $Res Function(WebSocketChannelEntity) _then;
 
-  /// Create a copy of WebSocketChannelEntity
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? plcId = null,
-    Object? address = null,
-    Object? channel = null,
-  }) {
-    return _then(_self.copyWith(
-      plcId: null == plcId
-          ? _self.plcId
-          : plcId // ignore: cast_nullable_to_non_nullable
-              as String,
-      address: null == address
-          ? _self.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String,
-      channel: null == channel
-          ? _self.channel
-          : channel // ignore: cast_nullable_to_non_nullable
-              as WebSocketChannel,
-    ));
-  }
+/// Create a copy of WebSocketChannelEntity
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? plcId = null,Object? address = null,Object? channel = null,Object? connectionType = null,}) {
+  return _then(_self.copyWith(
+plcId: null == plcId ? _self.plcId : plcId // ignore: cast_nullable_to_non_nullable
+as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,channel: null == channel ? _self.channel : channel // ignore: cast_nullable_to_non_nullable
+as WebSocketChannel,connectionType: null == connectionType ? _self.connectionType : connectionType // ignore: cast_nullable_to_non_nullable
+as ConnectionType,
+  ));
 }
+
+}
+
 
 /// Adds pattern-matching-related methods to [WebSocketChannelEntity].
 extension WebSocketChannelEntityPatterns on WebSocketChannelEntity {
-  /// A variant of `map` that fallback to returning `orElse`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult maybeMap<TResult extends Object?>(
-    TResult Function(_WebSocketChannelEntity value)? $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _WebSocketChannelEntity() when $default != null:
-        return $default(_that);
-      case _:
-        return orElse();
-    }
-  }
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _WebSocketChannelEntity value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _WebSocketChannelEntity() when $default != null:
+return $default(_that);case _:
+  return orElse();
 
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// Callbacks receives the raw object, upcasted.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case final Subclass2 value:
-  ///     return ...;
-  /// }
-  /// ```
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult map<TResult extends Object?>(
-    TResult Function(_WebSocketChannelEntity value) $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _WebSocketChannelEntity():
-        return $default(_that);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _WebSocketChannelEntity value)  $default,){
+final _that = this;
+switch (_that) {
+case _WebSocketChannelEntity():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
 
-  /// A variant of `map` that fallback to returning `null`.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case final Subclass value:
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult? mapOrNull<TResult extends Object?>(
-    TResult? Function(_WebSocketChannelEntity value)? $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _WebSocketChannelEntity() when $default != null:
-        return $default(_that);
-      case _:
-        return null;
-    }
-  }
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _WebSocketChannelEntity value)?  $default,){
+final _that = this;
+switch (_that) {
+case _WebSocketChannelEntity() when $default != null:
+return $default(_that);case _:
+  return null;
 
-  /// A variant of `when` that fallback to an `orElse` callback.
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return orElse();
-  /// }
-  /// ```
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult maybeWhen<TResult extends Object?>(
-    TResult Function(String plcId, String address, WebSocketChannel channel)?
-        $default, {
-    required TResult orElse(),
-  }) {
-    final _that = this;
-    switch (_that) {
-      case _WebSocketChannelEntity() when $default != null:
-        return $default(_that.plcId, _that.address, _that.channel);
-      case _:
-        return orElse();
-    }
-  }
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String plcId,  String address,  WebSocketChannel channel,  ConnectionType connectionType)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _WebSocketChannelEntity() when $default != null:
+return $default(_that.plcId,_that.address,_that.channel,_that.connectionType);case _:
+  return orElse();
 
-  /// A `switch`-like method, using callbacks.
-  ///
-  /// As opposed to `map`, this offers destructuring.
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case Subclass2(:final field2):
-  ///     return ...;
-  /// }
-  /// ```
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult when<TResult extends Object?>(
-    TResult Function(String plcId, String address, WebSocketChannel channel)
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _WebSocketChannelEntity():
-        return $default(_that.plcId, _that.address, _that.channel);
-      case _:
-        throw StateError('Unexpected subclass');
-    }
-  }
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String plcId,  String address,  WebSocketChannel channel,  ConnectionType connectionType)  $default,) {final _that = this;
+switch (_that) {
+case _WebSocketChannelEntity():
+return $default(_that.plcId,_that.address,_that.channel,_that.connectionType);case _:
+  throw StateError('Unexpected subclass');
 
-  /// A variant of `when` that fallback to returning `null`
-  ///
-  /// It is equivalent to doing:
-  /// ```dart
-  /// switch (sealedClass) {
-  ///   case Subclass(:final field):
-  ///     return ...;
-  ///   case _:
-  ///     return null;
-  /// }
-  /// ```
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
 
-  @optionalTypeArgs
-  TResult? whenOrNull<TResult extends Object?>(
-    TResult? Function(String plcId, String address, WebSocketChannel channel)?
-        $default,
-  ) {
-    final _that = this;
-    switch (_that) {
-      case _WebSocketChannelEntity() when $default != null:
-        return $default(_that.plcId, _that.address, _that.channel);
-      case _:
-        return null;
-    }
-  }
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String plcId,  String address,  WebSocketChannel channel,  ConnectionType connectionType)?  $default,) {final _that = this;
+switch (_that) {
+case _WebSocketChannelEntity() when $default != null:
+return $default(_that.plcId,_that.address,_that.channel,_that.connectionType);case _:
+  return null;
+
+}
+}
+
 }
 
 /// @nodoc
+
 
 class _WebSocketChannelEntity implements WebSocketChannelEntity {
-  const _WebSocketChannelEntity(
-      {required this.plcId, required this.address, required this.channel});
+  const _WebSocketChannelEntity({required this.plcId, required this.address, required this.channel, required this.connectionType});
+  
 
-  @override
-  final String plcId;
-  @override
-  final String address;
-  @override
-  final WebSocketChannel channel;
+@override final  String plcId;
+@override final  String address;
+@override final  WebSocketChannel channel;
+@override final  ConnectionType connectionType;
 
-  /// Create a copy of WebSocketChannelEntity
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @pragma('vm:prefer-inline')
-  _$WebSocketChannelEntityCopyWith<_WebSocketChannelEntity> get copyWith =>
-      __$WebSocketChannelEntityCopyWithImpl<_WebSocketChannelEntity>(
-          this, _$identity);
+/// Create a copy of WebSocketChannelEntity
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$WebSocketChannelEntityCopyWith<_WebSocketChannelEntity> get copyWith => __$WebSocketChannelEntityCopyWithImpl<_WebSocketChannelEntity>(this, _$identity);
 
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _WebSocketChannelEntity &&
-            (identical(other.plcId, plcId) || other.plcId == plcId) &&
-            (identical(other.address, address) || other.address == address) &&
-            (identical(other.channel, channel) || other.channel == channel));
-  }
 
-  @override
-  int get hashCode => Object.hash(runtimeType, plcId, address, channel);
 
-  @override
-  String toString() {
-    return 'WebSocketChannelEntity(plcId: $plcId, address: $address, channel: $channel)';
-  }
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _WebSocketChannelEntity&&(identical(other.plcId, plcId) || other.plcId == plcId)&&(identical(other.address, address) || other.address == address)&&(identical(other.channel, channel) || other.channel == channel)&&(identical(other.connectionType, connectionType) || other.connectionType == connectionType));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,plcId,address,channel,connectionType);
+
+@override
+String toString() {
+  return 'WebSocketChannelEntity(plcId: $plcId, address: $address, channel: $channel, connectionType: $connectionType)';
+}
+
+
 }
 
 /// @nodoc
-abstract mixin class _$WebSocketChannelEntityCopyWith<$Res>
-    implements $WebSocketChannelEntityCopyWith<$Res> {
-  factory _$WebSocketChannelEntityCopyWith(_WebSocketChannelEntity value,
-          $Res Function(_WebSocketChannelEntity) _then) =
-      __$WebSocketChannelEntityCopyWithImpl;
-  @override
-  @useResult
-  $Res call({String plcId, String address, WebSocketChannel channel});
-}
+abstract mixin class _$WebSocketChannelEntityCopyWith<$Res> implements $WebSocketChannelEntityCopyWith<$Res> {
+  factory _$WebSocketChannelEntityCopyWith(_WebSocketChannelEntity value, $Res Function(_WebSocketChannelEntity) _then) = __$WebSocketChannelEntityCopyWithImpl;
+@override @useResult
+$Res call({
+ String plcId, String address, WebSocketChannel channel, ConnectionType connectionType
+});
 
+
+
+
+}
 /// @nodoc
 class __$WebSocketChannelEntityCopyWithImpl<$Res>
     implements _$WebSocketChannelEntityCopyWith<$Res> {
@@ -308,30 +262,19 @@ class __$WebSocketChannelEntityCopyWithImpl<$Res>
   final _WebSocketChannelEntity _self;
   final $Res Function(_WebSocketChannelEntity) _then;
 
-  /// Create a copy of WebSocketChannelEntity
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $Res call({
-    Object? plcId = null,
-    Object? address = null,
-    Object? channel = null,
-  }) {
-    return _then(_WebSocketChannelEntity(
-      plcId: null == plcId
-          ? _self.plcId
-          : plcId // ignore: cast_nullable_to_non_nullable
-              as String,
-      address: null == address
-          ? _self.address
-          : address // ignore: cast_nullable_to_non_nullable
-              as String,
-      channel: null == channel
-          ? _self.channel
-          : channel // ignore: cast_nullable_to_non_nullable
-              as WebSocketChannel,
-    ));
-  }
+/// Create a copy of WebSocketChannelEntity
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? plcId = null,Object? address = null,Object? channel = null,Object? connectionType = null,}) {
+  return _then(_WebSocketChannelEntity(
+plcId: null == plcId ? _self.plcId : plcId // ignore: cast_nullable_to_non_nullable
+as String,address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
+as String,channel: null == channel ? _self.channel : channel // ignore: cast_nullable_to_non_nullable
+as WebSocketChannel,connectionType: null == connectionType ? _self.connectionType : connectionType // ignore: cast_nullable_to_non_nullable
+as ConnectionType,
+  ));
+}
+
+
 }
 
 // dart format on
