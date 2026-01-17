@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' show min, pow;
 
 import 'package:logging/logging.dart';
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_get_message_bo.dart'
     show WsGetMessageBO;
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_message_bo.dart';
-import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_messgae_payload_bo.dart';
+import 'package:mcomp_plc_utils/src/web_socket/bos/ws_set_message_payload_bo.dart';
 import 'package:mcomp_plc_utils/src/web_socket/entities/web_socket_channel_entity.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -17,6 +18,7 @@ class WebSocketController {
   static const _kWssProtocols = ['devs'];
   static const _kWssUpdateBody = '{"intent": "list"}';
   static const _kWssAddressPrefix = 'wss://';
+  static const _kMaxReconnectDelaySeconds = 30;
 
   final _logger = Logger('WebSocketController');
 
@@ -34,8 +36,10 @@ class WebSocketController {
 
   // Internal state
   final Map<String, WebSocketChannel> _channels = {};
+  final Map<String, StreamSubscription<dynamic>> _subscriptions = {};
   final Map<String, Timer> _reconnectTimers = {};
   final Map<String, String> _addresses = {};
+  final Map<String, int> _reconnectAttempts = {};
 
   List<WebSocketChannelEntity> get channels => _channels.entries
       .map(
@@ -62,10 +66,11 @@ class WebSocketController {
     }
 
     _addresses[plcId] = address;
+    _reconnectAttempts[plcId] = 0;
     _connectToPlc(plcId, address);
   }
 
-  void _connectToPlc(String plcId, String address) {
+  Future<void> _connectToPlc(String plcId, String address) async {
     _updateStatus(plcId, ConnectionStatus.connecting);
 
     try {
@@ -76,17 +81,23 @@ class WebSocketController {
 
       _channels[plcId] = channel;
 
+      // Wait for WebSocket to be ready before sending messages
+      await channel.ready;
+
+      // Reset reconnect attempts on successful connection
+      _reconnectAttempts[plcId] = 0;
+
       // Initial handshake
       channel.sink.add(_kWssUpdateBody);
       _updateStatus(plcId, ConnectionStatus.connected);
       _logger.info('WebSocket connected to $plcId, address: $address');
 
-      // Listen to messages
-      channel.stream.listen(
+      // Listen to messages and store subscription for proper cleanup
+      _subscriptions[plcId] = channel.stream.listen(
         (data) {
           _messageController.add((plcId: plcId, data: data));
         },
-        onError: (error) {
+        onError: (Object error) {
           _logger.warning('WebSocket error from $plcId: $error');
           _updateStatus(plcId, ConnectionStatus.error);
           _scheduleReconnect(plcId);
@@ -98,22 +109,43 @@ class WebSocketController {
         },
         cancelOnError: true,
       );
+    } on WebSocketChannelException catch (e) {
+      _logger.severe(
+        'WebSocket channel exception for $plcId, address: $address: $e',
+      );
+      _channels.remove(plcId);
+      _updateStatus(plcId, ConnectionStatus.error);
+      _scheduleReconnect(plcId);
     } catch (e) {
       _logger.severe(
         'WebSocket connection to $plcId, address: $address error: $e',
       );
+      _channels.remove(plcId);
       _updateStatus(plcId, ConnectionStatus.error);
       _scheduleReconnect(plcId);
     }
   }
 
+  /// Calculate reconnect delay with exponential backoff
+  int _getReconnectDelaySeconds(String plcId) {
+    final attempts = _reconnectAttempts[plcId] ?? 0;
+    return min(_kMaxReconnectDelaySeconds, pow(2, attempts).toInt());
+  }
+
   void _scheduleReconnect(String plcId) {
-    _channels.remove(plcId); // Cleanup old channel reference
+    // Cleanup old channel and subscription references
+    _channels.remove(plcId);
+    _subscriptions[plcId]?.cancel();
+    _subscriptions.remove(plcId);
 
     if (_reconnectTimers.containsKey(plcId)) return; // Already scheduled
 
-    _logger.info('Scheduling reconnect for $plcId in 5 seconds...');
-    _reconnectTimers[plcId] = Timer(const Duration(seconds: 5), () {
+    // Increment reconnect attempts for exponential backoff
+    _reconnectAttempts[plcId] = (_reconnectAttempts[plcId] ?? 0) + 1;
+    final delaySeconds = _getReconnectDelaySeconds(plcId);
+
+    _logger.info('Scheduling reconnect for $plcId in $delaySeconds seconds...');
+    _reconnectTimers[plcId] = Timer(Duration(seconds: delaySeconds), () {
       _reconnectTimers.remove(plcId);
       final address = _addresses[plcId];
       if (address != null) {
@@ -139,6 +171,10 @@ class WebSocketController {
   void disconnect(String plcId) {
     _reconnectTimers[plcId]?.cancel();
     _reconnectTimers.remove(plcId);
+    _reconnectAttempts.remove(plcId);
+
+    _subscriptions[plcId]?.cancel();
+    _subscriptions.remove(plcId);
 
     final channel = _channels.remove(plcId);
     if (channel != null) {
@@ -153,6 +189,12 @@ class WebSocketController {
       timer.cancel();
     }
     _reconnectTimers.clear();
+    _reconnectAttempts.clear();
+
+    for (final subscription in _subscriptions.values) {
+      subscription.cancel();
+    }
+    _subscriptions.clear();
 
     for (final entry in _channels.entries) {
       _disconnectChannel(entry.value, entry.key);
@@ -211,7 +253,7 @@ class WebSocketController {
   }) {
     final message = jsonEncode(
       WsSetMessageBO(
-        payload: [WsSetMessgaePayloadBO(id: deviceId, update: update)],
+        payload: [WsSetMessagePayloadBO(id: deviceId, update: update)],
       ),
     );
     sendMessage(plcId: plcId, message: message);
@@ -229,7 +271,7 @@ class WebSocketController {
       WsSetMessageBO(
         payload: update
             .map(
-              (item) => WsSetMessgaePayloadBO(
+              (item) => WsSetMessagePayloadBO(
                 id: item.deviceId,
                 update: item.update,
               ),
@@ -253,7 +295,8 @@ class WebSocketController {
       if (channel != null) {
         channel.sink.add(message);
       } else {
-        _logger.warning('Cannot send message: WebSocket for $plcId not connected');
+        _logger
+            .warning('Cannot send message: WebSocket for $plcId not connected');
       }
     } catch (e) {
       _logger.severe('Error sending message to $plcId, error: $e');

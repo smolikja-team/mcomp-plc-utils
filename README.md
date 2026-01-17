@@ -171,6 +171,13 @@ print('Device FCM token: $token');
 - Logger (needs to be set in the parent app)
 - PLC ID and PLC address for communication
 
+#### Features
+
+- **Automatic reconnection** with exponential backoff (1s → 30s max)
+- **Connection status monitoring** via `statusStream`
+- **Multi-PLC support** - manage multiple WebSocket connections
+- **Proper resource cleanup** - subscriptions and timers are correctly disposed
+
 #### Output
 
 - Opens a Web Sockets
