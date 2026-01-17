@@ -16,17 +16,17 @@ enum ConnectionStatus { connected, connecting, disconnected, error }
 
 class WebSocketController {
   /// Creates a WebSocketController.
-  /// - [localConnectionTimeoutSeconds]: Timeout for local network connection
-  ///   before falling back to public. Default: 1 second.
-  WebSocketController({this.localConnectionTimeoutSeconds = 1});
+  /// - [localConnectionTimeoutMs]: Timeout in milliseconds for local network
+  ///   connection before falling back to public. Default: 1000ms (1 second).
+  WebSocketController({this.localConnectionTimeoutMs = 1000});
 
   static const _kWssProtocols = ['devs'];
   static const _kWssUpdateBody = '{"intent": "list"}';
   static const _kWssAddressPrefix = 'wss://';
   static const _kMaxReconnectDelaySeconds = 30;
 
-  /// Timeout in seconds for local network connection attempts.
-  final int localConnectionTimeoutSeconds;
+  /// Timeout in milliseconds for local network connection attempts.
+  final int localConnectionTimeoutMs;
 
   final _logger = Logger('WebSocketController');
 
@@ -145,7 +145,7 @@ class WebSocketController {
               // Give local a slight priority window
               unawaited(
                 Future.delayed(
-                  Duration(seconds: localConnectionTimeoutSeconds),
+                  Duration(milliseconds: localConnectionTimeoutMs),
                   () {
                     if (!completer.isCompleted) {
                       completer.complete((
@@ -170,7 +170,7 @@ class WebSocketController {
 
     // Also set a timeout for local to ensure public can win if local is slow
     unawaited(
-      Future.delayed(Duration(seconds: localConnectionTimeoutSeconds), () {
+      Future.delayed(Duration(milliseconds: localConnectionTimeoutMs), () {
         if (!completer.isCompleted && publicChannel != null) {
           completer.complete((
             channel: publicChannel!,

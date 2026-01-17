@@ -208,10 +208,10 @@ print('Device FCM token: $token');
 #### Example
 
 ```dart
-// Create an instance with custom timeout (default: 1 second)
-final controller = WebSocketController(localConnectionTimeoutSeconds: 2);
+// Create an instance with custom timeout (default: 1000ms)
+final controller = WebSocketController(localConnectionTimeoutMs: 500); // 500ms
 
-// Or use default timeout
+// Or use default timeout (1 second)
 final defaultController = WebSocketController();
 
 // Connect with local network support (recommended)
