@@ -30,8 +30,9 @@ Future showResizableBottomSheet({
   double? maxWidth,
 
   /// The border radius of the bottom sheet.
-  BorderRadiusGeometry borderRadius =
-      const BorderRadius.vertical(top: Radius.circular(28.0)),
+  BorderRadiusGeometry borderRadius = const BorderRadius.vertical(
+    top: Radius.circular(28.0),
+  ),
 }) {
   return showModalBottomSheet(
     context: context,

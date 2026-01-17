@@ -172,8 +172,9 @@ class ConfigFetcher {
     // Try to get metadata from Firebase for MD5 comparison
     String? remoteMd5Hash;
     try {
-      final metadata =
-          await pathReference.getMetadata().timeout(_kFirebaseTimeout);
+      final metadata = await pathReference.getMetadata().timeout(
+        _kFirebaseTimeout,
+      );
       remoteMd5Hash = metadata.md5Hash;
     } on TimeoutException {
       _log.warning('Metadata timeout for $plcId');
@@ -224,8 +225,9 @@ class ConfigFetcher {
     CachedPlcConfig? fallbackCache,
   }) async {
     try {
-      final data =
-          await pathReference.getData(_kOneMegabyte).timeout(_kFirebaseTimeout);
+      final data = await pathReference
+          .getData(_kOneMegabyte)
+          .timeout(_kFirebaseTimeout);
 
       if (data == null || data.isEmpty) {
         _log.warning('Empty data received for $plcId');
@@ -266,12 +268,13 @@ class ConfigFetcher {
     final documents = await FirebaseFirestore.instance
         .collection(_kFirestoreCollection)
         .where(
-      _kFirestoreKeyUsers,
-      arrayContains: {
-        _kFirestoreKeyEmail: userEmail,
-        _kFirestoreKeyUid: userUid,
-      },
-    ).get();
+          _kFirestoreKeyUsers,
+          arrayContains: {
+            _kFirestoreKeyEmail: userEmail,
+            _kFirestoreKeyUid: userUid,
+          },
+        )
+        .get();
 
     final plcIds = documents.docs.map((doc) => doc.id).toList();
     return plcIds.isEmpty ? null : plcIds;

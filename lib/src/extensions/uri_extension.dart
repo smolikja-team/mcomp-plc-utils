@@ -7,9 +7,7 @@ extension LaunchUri on Uri {
   /// Launches the URL in the default browser.
   Future<void> launchInBrowser() async {
     if (!await launchUrl(this)) {
-      _logging.severe(
-        'Could not launch $this',
-      );
+      _logging.severe('Could not launch $this');
     }
   }
 }

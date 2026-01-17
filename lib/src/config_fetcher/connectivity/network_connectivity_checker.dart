@@ -36,8 +36,9 @@ class NetworkConnectivityChecker implements ConnectivityChecker {
   Future<bool> hasConnectivity() async {
     // Step 1: Check if device is connected to any network
     final results = await Connectivity().checkConnectivity();
-    final hasNetworkInterface =
-        results.any((result) => result != ConnectivityResult.none);
+    final hasNetworkInterface = results.any(
+      (result) => result != ConnectivityResult.none,
+    );
 
     if (!hasNetworkInterface) {
       return false;

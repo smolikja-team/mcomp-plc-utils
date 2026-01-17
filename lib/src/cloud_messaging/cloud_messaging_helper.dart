@@ -80,11 +80,13 @@ class CloudMessagingHelper {
       return;
     }
 
-    final toUnsubscribe =
-        currentTopics.where((topic) => !topics.contains(topic)).toList();
+    final toUnsubscribe = currentTopics
+        .where((topic) => !topics.contains(topic))
+        .toList();
 
-    final toSubscribe =
-        topics.where((topic) => !currentTopics.contains(topic)).toList();
+    final toSubscribe = topics
+        .where((topic) => !currentTopics.contains(topic))
+        .toList();
 
     try {
       // Unsubscribe from old topics
@@ -98,10 +100,7 @@ class CloudMessagingHelper {
 
       // Subscribe to new topics
       if (toSubscribe.isNotEmpty) {
-        await Future.wait(
-          toSubscribe.map(_subscribeToTopic),
-          eagerError: true,
-        );
+        await Future.wait(toSubscribe.map(_subscribeToTopic), eagerError: true);
         _logger.fine('Subscribed to topics: $toSubscribe');
       }
 
@@ -200,7 +199,8 @@ class CloudMessagingHelper {
     if (Platform.isAndroid) {
       await _flutterLocalNotificationsPlugin
           .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.createNotificationChannel(_channel);
     }
 
@@ -223,10 +223,10 @@ class CloudMessagingHelper {
   static Future<void> _setupMessageHandlers() async {
     await FirebaseMessaging.instance
         .setForegroundNotificationPresentationOptions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+          alert: true,
+          badge: true,
+          sound: true,
+        );
 
     // Just show notifications when in foreground, don't process
     FirebaseMessaging.onMessage.listen(_showLocalNotificationOnForeground);
