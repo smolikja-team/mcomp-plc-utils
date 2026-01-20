@@ -37,20 +37,15 @@ export 'package:mcomp_plc_utils/src/web_socket/bos/ws_message_bo.dart'
 export 'package:mcomp_plc_utils/src/web_socket/bos/ws_message_item_bo.dart'
     show WsMessageItemBO;
 
-export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_bool_bo.dart'
-    show PlcBoolBO;
+export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_bool_bo.dart';
 
-export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_int_bo.dart'
-    show PlcIntBO;
+export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_int_bo.dart';
 
-export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_dt_bo.dart'
-    show PlcDtBO;
+export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_dt_bo.dart';
 
-export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_tod_bo.dart'
-    show PlcTodBO;
+export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_tod_bo.dart';
 
-export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_real_bo.dart'
-    show PlcRealBO;
+export 'package:mcomp_plc_utils/src/web_socket/bos/plc_types/plc_real_bo.dart';
 
 // MARK: - Resizable Bottom Sheet
 
