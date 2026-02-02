@@ -214,7 +214,7 @@ class CloudMessagingHelper {
     );
 
     await _flutterLocalNotificationsPlugin.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onDidReceiveNotificationResponse,
     );
   }
@@ -266,10 +266,10 @@ class CloudMessagingHelper {
   ) {
     if (Platform.isAndroid) {
       _flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
+        id: notification.hashCode,
+        title: notification.title,
+        body: notification.body,
+        notificationDetails: NotificationDetails(
           android: AndroidNotificationDetails(
             _channel.id,
             _channel.name,

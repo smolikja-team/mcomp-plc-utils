@@ -18,7 +18,7 @@ dependencies:
   firebase_storage: ^13.0.2
   flutter:
     sdk: flutter
-  flutter_local_notifications: ^19.1.0
+  flutter_local_notifications: ^20.0.0
   freezed_annotation: ^3.0.0
   json_annotation: ^4.9.0
   json_serializable: ^6.6.0
