@@ -15,24 +15,27 @@ Future showResizableBottomSheet({
   Color? backgroundColor,
 
   /// The border color of the bottom sheet.
-  Color? borderColor,
+  Color borderColor = Colors.transparent,
 
   /// The minimum height of the bottom sheet.
-  double? minHeight,
+  double minHeight = 0,
 
   /// The minimum width of the bottom sheet.
-  double? minWidth,
+  double minWidth = 0,
 
   /// The maximum height of the bottom sheet.
-  double? maxHeight,
+  double maxHeight = double.infinity,
 
   /// The maximum width of the bottom sheet.
-  double? maxWidth,
+  double maxWidth = double.infinity,
 
   /// The border radius of the bottom sheet.
   BorderRadiusGeometry borderRadius = const BorderRadius.vertical(
     top: Radius.circular(28.0),
   ),
+
+  /// The border width of the bottom sheet.
+  double borderWidth = 1.0,
 }) {
   return showModalBottomSheet(
     context: context,
@@ -42,18 +45,14 @@ Future showResizableBottomSheet({
     backgroundColor: backgroundColor,
     shape: RoundedRectangleBorder(
       borderRadius: borderRadius,
-      side: BorderSide(
-        color: borderColor ?? Colors.transparent,
-        width: 1.0,
-        strokeAlign: 1,
-      ),
+      side: BorderSide(color: borderColor, width: borderWidth, strokeAlign: 1),
     ),
     builder: (BuildContext context) => Container(
       constraints: BoxConstraints(
-        minHeight: minHeight ?? 0,
-        minWidth: minWidth ?? 0,
-        maxHeight: maxHeight ?? double.infinity,
-        maxWidth: maxWidth ?? double.infinity,
+        minHeight: minHeight,
+        minWidth: minWidth,
+        maxHeight: maxHeight,
+        maxWidth: maxWidth,
       ),
       child: SingleChildScrollView(
         child: Padding(
