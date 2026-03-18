@@ -204,6 +204,7 @@ print('Device FCM token: $token');
 - `PlcDtBO`
 - `PlcTodBO`
 - `PlcRealBO`
+- `PlcStringBO`
 
 #### Example
 
