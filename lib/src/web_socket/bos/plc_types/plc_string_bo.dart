@@ -8,7 +8,7 @@ part 'plc_string_bo.g.dart';
 @freezed
 abstract class PlcStringBO with _$PlcStringBO {
   const factory PlcStringBO({
-    @JsonKey(name: 'val') required double value,
+    @JsonKey(name: 'val') required String value,
     @Default('STRING') String dt,
   }) = _PlcStringBO;
 

@@ -7,7 +7,7 @@ part of 'plc_string_bo.dart';
 // **************************************************************************
 
 _PlcStringBO _$PlcStringBOFromJson(Map<String, dynamic> json) => _PlcStringBO(
-  value: (json['val'] as num).toDouble(),
+  value: json['val'] as String,
   dt: json['dt'] as String? ?? 'STRING',
 );
 

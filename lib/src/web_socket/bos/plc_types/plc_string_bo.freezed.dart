@@ -15,7 +15,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$PlcStringBO {
 
-@JsonKey(name: 'val') double get value; String get dt;
+@JsonKey(name: 'val') String get value; String get dt;
 /// Create a copy of PlcStringBO
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -48,7 +48,7 @@ abstract mixin class $PlcStringBOCopyWith<$Res>  {
   factory $PlcStringBOCopyWith(PlcStringBO value, $Res Function(PlcStringBO) _then) = _$PlcStringBOCopyWithImpl;
 @useResult
 $Res call({
-@JsonKey(name: 'val') double value, String dt
+@JsonKey(name: 'val') String value, String dt
 });
 
 
@@ -68,7 +68,7 @@ class _$PlcStringBOCopyWithImpl<$Res>
 @pragma('vm:prefer-inline') @override $Res call({Object? value = null,Object? dt = null,}) {
   return _then(_self.copyWith(
 value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as double,dt: null == dt ? _self.dt : dt // ignore: cast_nullable_to_non_nullable
+as String,dt: null == dt ? _self.dt : dt // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -154,7 +154,7 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'val')  double value,  String dt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function(@JsonKey(name: 'val')  String value,  String dt)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _PlcStringBO() when $default != null:
 return $default(_that.value,_that.dt);case _:
@@ -175,7 +175,7 @@ return $default(_that.value,_that.dt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'val')  double value,  String dt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function(@JsonKey(name: 'val')  String value,  String dt)  $default,) {final _that = this;
 switch (_that) {
 case _PlcStringBO():
 return $default(_that.value,_that.dt);case _:
@@ -195,7 +195,7 @@ return $default(_that.value,_that.dt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'val')  double value,  String dt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function(@JsonKey(name: 'val')  String value,  String dt)?  $default,) {final _that = this;
 switch (_that) {
 case _PlcStringBO() when $default != null:
 return $default(_that.value,_that.dt);case _:
@@ -213,7 +213,7 @@ class _PlcStringBO implements PlcStringBO {
   const _PlcStringBO({@JsonKey(name: 'val') required this.value, this.dt = 'STRING'});
   factory _PlcStringBO.fromJson(Map<String, dynamic> json) => _$PlcStringBOFromJson(json);
 
-@override@JsonKey(name: 'val') final  double value;
+@override@JsonKey(name: 'val') final  String value;
 @override@JsonKey() final  String dt;
 
 /// Create a copy of PlcStringBO
@@ -249,7 +249,7 @@ abstract mixin class _$PlcStringBOCopyWith<$Res> implements $PlcStringBOCopyWith
   factory _$PlcStringBOCopyWith(_PlcStringBO value, $Res Function(_PlcStringBO) _then) = __$PlcStringBOCopyWithImpl;
 @override @useResult
 $Res call({
-@JsonKey(name: 'val') double value, String dt
+@JsonKey(name: 'val') String value, String dt
 });
 
 
@@ -269,7 +269,7 @@ class __$PlcStringBOCopyWithImpl<$Res>
 @override @pragma('vm:prefer-inline') $Res call({Object? value = null,Object? dt = null,}) {
   return _then(_PlcStringBO(
 value: null == value ? _self.value : value // ignore: cast_nullable_to_non_nullable
-as double,dt: null == dt ? _self.dt : dt // ignore: cast_nullable_to_non_nullable
+as String,dt: null == dt ? _self.dt : dt // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
