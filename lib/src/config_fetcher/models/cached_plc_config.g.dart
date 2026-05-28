@@ -19,5 +19,5 @@ Map<String, dynamic> _$CachedPlcConfigToJson(_CachedPlcConfig instance) =>
     <String, dynamic>{
       'plcId': instance.plcId,
       'config': instance.config,
-      'metadata': instance.metadata,
+      'metadata': instance.metadata.toJson(),
     };

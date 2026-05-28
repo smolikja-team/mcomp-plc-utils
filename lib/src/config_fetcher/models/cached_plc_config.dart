@@ -1,3 +1,5 @@
+// ignore_for_file: invalid_annotation_target
+
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:mcomp_plc_utils/src/config_fetcher/models/cache_metadata.dart';
 
@@ -11,6 +13,7 @@ part 'cached_plc_config.g.dart';
 @freezed
 abstract class CachedPlcConfig with _$CachedPlcConfig {
   /// Creates a cached PLC configuration.
+  @JsonSerializable(explicitToJson: true)
   const factory CachedPlcConfig({
     /// PLC identifier matching the Firebase Storage file name.
     required String plcId,

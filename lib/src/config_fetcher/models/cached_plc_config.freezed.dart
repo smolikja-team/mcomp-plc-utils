@@ -220,8 +220,8 @@ return $default(_that.plcId,_that.config,_that.metadata);case _:
 }
 
 /// @nodoc
-@JsonSerializable()
 
+@JsonSerializable(explicitToJson: true)
 class _CachedPlcConfig implements CachedPlcConfig {
   const _CachedPlcConfig({required this.plcId, required final  Map<String, dynamic> config, required this.metadata}): _config = config;
   factory _CachedPlcConfig.fromJson(Map<String, dynamic> json) => _$CachedPlcConfigFromJson(json);
