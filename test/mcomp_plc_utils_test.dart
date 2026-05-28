@@ -135,6 +135,74 @@ void main() {
     });
   });
 
+  group('WebSocketController state update queue', () {
+    test('queues device IDs when PLC is not connected', () {
+      final controller = WebSocketController()
+        ..requestStateUpdate(plcId: 'PLC_1', deviceIds: ['DEV_1', 'DEV_2']);
+
+      expect(
+        controller.pendingStateRequestsFor('PLC_1'),
+        {'DEV_1', 'DEV_2'},
+      );
+
+      controller.dispose();
+    });
+
+    test('merges device IDs from repeated calls before connection', () {
+      final controller = WebSocketController()
+        ..requestStateUpdate(plcId: 'PLC_1', deviceIds: ['DEV_1', 'DEV_2'])
+        ..requestStateUpdate(plcId: 'PLC_1', deviceIds: ['DEV_2', 'DEV_3']);
+
+      expect(
+        controller.pendingStateRequestsFor('PLC_1'),
+        {'DEV_1', 'DEV_2', 'DEV_3'},
+      );
+
+      controller.dispose();
+    });
+
+    test('queues are independent per PLC', () {
+      final controller = WebSocketController()
+        ..requestStateUpdate(plcId: 'PLC_1', deviceIds: ['DEV_A'])
+        ..requestStateUpdate(plcId: 'PLC_2', deviceIds: ['DEV_B']);
+
+      expect(controller.pendingStateRequestsFor('PLC_1'), {'DEV_A'});
+      expect(controller.pendingStateRequestsFor('PLC_2'), {'DEV_B'});
+
+      controller.dispose();
+    });
+
+    test('disconnect clears pending queue for that PLC', () {
+      final controller = WebSocketController()
+        ..requestStateUpdate(plcId: 'PLC_1', deviceIds: ['DEV_1'])
+        ..disconnect('PLC_1');
+
+      expect(controller.pendingStateRequestsFor('PLC_1'), isEmpty);
+
+      controller.dispose();
+    });
+
+    test('disconnectAll clears all pending queues', () {
+      final controller = WebSocketController()
+        ..requestStateUpdate(plcId: 'PLC_1', deviceIds: ['DEV_1'])
+        ..requestStateUpdate(plcId: 'PLC_2', deviceIds: ['DEV_2'])
+        ..disconnectAll();
+
+      expect(controller.pendingStateRequestsFor('PLC_1'), isEmpty);
+      expect(controller.pendingStateRequestsFor('PLC_2'), isEmpty);
+
+      controller.dispose();
+    });
+
+    test('returns empty set for unknown PLC', () {
+      final controller = WebSocketController();
+
+      expect(controller.pendingStateRequestsFor('UNKNOWN'), isEmpty);
+
+      controller.dispose();
+    });
+  });
+
   group('Config cache models', () {
     test('round-trip cached config metadata through json', () {
       final cachedAt = DateTime.utc(2026, 5, 28, 10, 30);

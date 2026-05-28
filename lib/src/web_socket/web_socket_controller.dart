@@ -3,6 +3,7 @@ import 'dart:async'
 import 'dart:convert';
 import 'dart:math' show min, pow;
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:logging/logging.dart';
 import 'package:mcomp_plc_utils/src/web_socket/bos/ws_get_message_bo.dart'
     show WsGetMessageBO;
@@ -49,6 +50,15 @@ class WebSocketController {
   final Map<String, PlcAddresses> _addresses = {};
   final Map<String, int> _reconnectAttempts = {};
   final Map<String, ConnectionType> _connectionTypes = {};
+
+  // Pending state update requests queued while the channel is not yet connected.
+  // Only requestStateUpdate (idempotent GET) is queued — control commands are not.
+  final Map<String, Set<String>> _pendingStateRequests = {};
+
+  /// Exposes pending queued device IDs per PLC for testing purposes.
+  @visibleForTesting
+  Set<String> pendingStateRequestsFor(String plcId) =>
+      Set.unmodifiable(_pendingStateRequests[plcId] ?? const {});
 
   List<WebSocketChannelEntity> get channels => _channels.entries
       .map(
@@ -269,6 +279,8 @@ class WebSocketController {
       'WebSocket connected to $plcId via ${type.name}, address: $address',
     );
 
+    _flushPendingStateRequests(plcId);
+
     // Listen to messages and store subscription for proper cleanup
     _subscriptions[plcId] = channel.stream.listen(
       (data) {
@@ -353,6 +365,7 @@ class WebSocketController {
     }
     _addresses.remove(plcId);
     _connectionTypes.remove(plcId);
+    _pendingStateRequests.remove(plcId);
   }
 
   /// Disconnect all WebSocket
@@ -374,6 +387,7 @@ class WebSocketController {
     _channels.clear();
     _addresses.clear();
     _connectionTypes.clear();
+    _pendingStateRequests.clear();
   }
 
   void _disconnectChannel(WebSocketChannel channel, String plcId) {
@@ -398,6 +412,11 @@ class WebSocketController {
   // MARK: - Sending messages
 
   /// Request State Update
+  ///
+  /// If the WebSocket for [plcId] is not yet connected, the request is queued
+  /// and automatically sent once the connection is established. Duplicate device
+  /// IDs across multiple calls are merged (Set semantics).
+  ///
   /// - Parameters:
   /// - plcId: PLC identifier
   /// - deviceIds: List of device identifiers
@@ -405,10 +424,32 @@ class WebSocketController {
     required String plcId,
     required List<String> deviceIds,
   }) {
+    if (!_channels.containsKey(plcId)) {
+      _pendingStateRequests
+          .putIfAbsent(plcId, () => {})
+          .addAll(deviceIds);
+      _logger.info(
+        'Queued state update for devices: $deviceIds, on PLC: $plcId',
+      );
+      return;
+    }
+
     final message = jsonEncode(WsGetMessageBO(payload: deviceIds));
     _logger.info(
       'Requesting state update of devices: $deviceIds, on PLC: $plcId',
     );
+    sendMessage(plcId: plcId, message: message);
+  }
+
+  void _flushPendingStateRequests(String plcId) {
+    final pending = _pendingStateRequests.remove(plcId);
+    if (pending == null || pending.isEmpty) return;
+
+    final deviceIds = pending.toList(growable: false);
+    _logger.info(
+      'Flushing queued state update for devices: $deviceIds, on PLC: $plcId',
+    );
+    final message = jsonEncode(WsGetMessageBO(payload: deviceIds));
     sendMessage(plcId: plcId, message: message);
   }
 

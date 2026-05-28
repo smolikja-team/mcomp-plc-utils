@@ -29,7 +29,7 @@ export 'package:mcomp_plc_utils/src/cloud_messaging/cloud_messaging_helper.dart'
 // MARK: - WebSocket
 
 export 'package:mcomp_plc_utils/src/web_socket/web_socket_controller.dart'
-    show WebSocketController;
+    show WebSocketController, ConnectionStatus;
 
 export 'package:mcomp_plc_utils/src/web_socket/bos/ws_message_bo.dart'
     show WsMessageBO;

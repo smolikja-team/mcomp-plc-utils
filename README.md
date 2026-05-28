@@ -176,7 +176,8 @@ print('Device FCM token: $token');
 - **Local network fallback** - prioritizes local network, falls back to public internet
 - **Parallel race connection** - attempts both connections simultaneously for fastest response
 - **Automatic reconnection** with exponential backoff (1s → 30s max)
-- **Connection status monitoring** via `statusStream`
+- **Connection status monitoring** via `statusStream` (`ConnectionStatus`: `connected`, `connecting`, `disconnected`, `error`)
+- **State update queuing** - `requestStateUpdate` calls made before the channel is ready are queued and automatically flushed once connected; duplicate device IDs are merged (Set semantics)
 - **Multi-PLC support** - manage multiple WebSocket connections
 - **Proper resource cleanup** - subscriptions and timers are correctly disposed
 
@@ -187,6 +188,10 @@ print('Device FCM token: $token');
 3. If local succeeds first, public connection is cancelled
 4. If local fails or times out, public connection is used
 5. On reconnect, always tries local first (if available)
+
+> **Note:** only `requestStateUpdate` (idempotent GET) is queued. Control commands
+> (`updateDevice`, `updateDevices`) are sent immediately and dropped if the channel
+> is not connected — queue them at the call-site if needed.
 
 #### Output
 
@@ -246,9 +251,19 @@ controller.messages.listen((message) {
 // Listen to connection status changes
 controller.statusStream.listen((status) {
   print('PLC ${status.plcId} is ${status.status}');
+
+  // Re-request state after every (re)connect to stay in sync
+  if (status.status == ConnectionStatus.connected) {
+    controller.requestStateUpdate(
+      plcId: status.plcId,
+      deviceIds: ['device_1', 'device_2'],
+    );
+  }
 });
 
-// Send a message
+// Request state update — safe to call before the channel is ready.
+// If the PLC is not yet connected the call is queued and sent automatically
+// once the connection is established.
 controller.requestStateUpdate(
   plcId: 'plcId_1',
   deviceIds: ['device_1', 'device_2'],
